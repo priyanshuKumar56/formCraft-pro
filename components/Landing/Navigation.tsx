@@ -16,28 +16,28 @@ const Navbar: React.FC = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             {/* <Link href="/" className="flex items-center space-x-2"> */}
-                <Image
-                  src="/fs-logo.jpg"
-                  alt="FormCraft Pro Logo"
-                  width={62}
-                  height={62}
-                  className="rounded-full"/>
+            <Image
+              src="/fs-logo.jpg"
+              alt="FormCraft Pro Logo"
+              width={62}
+              height={62}
+              className="rounded-full" />
             <span className="text-xl font-bold text-gray-900">FormCraft Pro</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+              <a href="#features" className="text-gray-600 font-medium">
                 Features
               </a>
-              <a href="#templates" className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+              <a href="#templates" className="text-gray-600 font-medium">
                 Templates
               </a>
-              <a href="#pricing" className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+              <a href="#pricing" className="text-gray-600 font-medium">
                 Pricing
               </a>
-              <a href="#testimonials" className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+              <a href="#testimonials" className="text-gray-600 font-medium">
                 Reviews
               </a>
             </div>
@@ -51,7 +51,7 @@ const Navbar: React.FC = () => {
               </Button>
             </Link>
             <Link href="/auth/signup">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">Get Started Free</Button>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold">Get Started Free</Button>
             </Link>
           </div>
 
