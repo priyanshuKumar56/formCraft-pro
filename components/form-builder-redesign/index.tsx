@@ -201,8 +201,8 @@ export function FormBuilderRedesign() {
                             isOpen={isSettingsSidebarOpen}
                             onToggle={() => dispatch(setSettingsSidebarOpen(!isSettingsSidebarOpen))}
                             selectedElement={selectedElementId}
-                            formElement={selectedElementId ? currentPage?.sections.flatMap((s) => s.elements).find((el) => el.id === selectedElementId) : null}
-                            formSection={selectedElementId ? currentPage?.sections.find((s) => s.id === selectedElementId) : null}
+                            formElement={selectedElementId ? currentPage?.sections.flatMap((s) => s.elements).find((el) => el.id === selectedElementId) ?? null : null}
+                            formSection={selectedElementId ? currentPage?.sections.find((s) => s.id === selectedElementId) ?? null : null}
                             onUpdateElement={handleUpdateElement}
                             onUpdateSection={handleUpdateSection}
                             currentPage={currentPage}
