@@ -104,6 +104,8 @@ export interface FormPage {
       left: number
     }
     textColor: string
+    buttonColor: string
+    buttonTextColor: string
     maxWidth: "sm" | "md" | "lg" | "xl" | "full" | "custom"
     customMaxWidth?: string
     alignment: "left" | "center" | "right"

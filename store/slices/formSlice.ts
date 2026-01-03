@@ -34,6 +34,8 @@ const initialState: FormState = {
           shadow: { enabled: true, x: 0, y: 20, blur: 50, spread: -10, color: "rgba(0,0,0,0.08)" },
           padding: { top: 40, right: 32, bottom: 40, left: 32 },
           textColor: "#0f172a",
+          buttonColor: "#0f172a",
+          buttonTextColor: "#ffffff",
           alignment: "center",
         },
         sections: [
@@ -90,6 +92,8 @@ const initialState: FormState = {
           shadow: { enabled: true, x: 0, y: 20, blur: 50, spread: -10, color: "rgba(0,0,0,0.08)" },
           padding: { top: 40, right: 32, bottom: 40, left: 32 },
           textColor: "#0f172a",
+          buttonColor: "#0f172a",
+          buttonTextColor: "#ffffff",
           alignment: "center",
         },
         sections: [
@@ -288,6 +292,8 @@ const formSlice = createSlice({
           shadow: { enabled: true, x: 0, y: 20, blur: 50, spread: -10, color: "rgba(0,0,0,0.08)" },
           padding: { top: 40, right: 32, bottom: 40, left: 32 },
           textColor: "#0f172a",
+          buttonColor: "#0f172a",
+          buttonTextColor: "#ffffff",
           alignment: "center",
         },
         sections: [

@@ -511,6 +511,61 @@ export function PropertiesPanel({
                                             </div>
                                         </div>
 
+                                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Typography & Buttons</Label>
+
+                                            <div className="space-y-2">
+                                                <Label className="text-xs text-slate-600">Global Text Color</Label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="color"
+                                                        value={currentPage.layout.textColor}
+                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, textColor: e.target.value } })}
+                                                        className="w-8 h-8 rounded border border-slate-200"
+                                                    />
+                                                    <Input
+                                                        value={currentPage.layout.textColor}
+                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, textColor: e.target.value } })}
+                                                        className="h-8 text-xs font-mono"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label className="text-xs text-slate-600">Button Color</Label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="color"
+                                                        value={currentPage.layout.buttonColor}
+                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, buttonColor: e.target.value } })}
+                                                        className="w-8 h-8 rounded border border-slate-200"
+                                                    />
+                                                    <Input
+                                                        value={currentPage.layout.buttonColor}
+                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, buttonColor: e.target.value } })}
+                                                        className="h-8 text-xs font-mono"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label className="text-xs text-slate-600">Button Text Color</Label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="color"
+                                                        value={currentPage.layout.buttonTextColor}
+                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, buttonTextColor: e.target.value } })}
+                                                        className="w-8 h-8 rounded border border-slate-200"
+                                                    />
+                                                    <Input
+                                                        value={currentPage.layout.buttonTextColor}
+                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, buttonTextColor: e.target.value } })}
+                                                        className="h-8 text-xs font-mono"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div className="space-y-2">
                                             <Label className="text-xs text-slate-700">Page Width</Label>
                                             <Select

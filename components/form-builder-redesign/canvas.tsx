@@ -4,7 +4,7 @@ import { useRef, useCallback } from "react"
 import { useDrop } from "react-dnd"
 import type { FormPage, FormSection } from "@/types/form"
 import { EditableSection } from "./editable-section"
-import { Plus, Layout, Box, MousePointer, Sparkles } from "lucide-react"
+import { Plus, Layout, Box, MousePointer, Sparkles, ArrowLeft, ArrowRight, Settings, Trash2 } from "lucide-react"
 import { getCanvasStyles, getCardStyles } from "@/lib/styling"
 
 interface FormCanvasProps {
@@ -78,7 +78,7 @@ export function FormCanvas({
         >
             {/* Dotted Grid Background - Combined with canvas background */}
             <div
-                className="min-h-full p-12 flex flex-col items-center"
+                className="min-h-full pt-32 pb-40 px-12 flex flex-col items-center"
                 style={{
                     backgroundImage: `radial-gradient(circle, #00000010 1px, transparent 1px)`,
                     backgroundSize: '24px 24px',
@@ -139,6 +139,19 @@ export function FormCanvas({
                             ))}
                         </div>
                     )}
+
+                    {/* Visual Navigation Buttons - Matches Preview exactly */}
+                    <div className="flex items-center justify-between gap-6 pt-12 mt-8 border-t border-slate-100/50 px-2 opacity-50 select-none grayscale cursor-not-allowed">
+                        <div className="flex items-center gap-3 px-6 py-4 rounded-xl font-black text-slate-400 uppercase tracking-widest text-[10px]">
+                            <ArrowLeft className="h-4 w-4" /> Previous Step
+                        </div>
+                        <div
+                            style={{ backgroundColor: currentPage.layout.buttonColor, color: currentPage.layout.buttonTextColor }}
+                            className="flex items-center gap-3 px-10 py-5 rounded-[2rem] font-black text-lg shadow-xl"
+                        >
+                            Continue <ArrowRight className="h-5 w-5" />
+                        </div>
+                    </div>
                 </div>
 
                 {/* Floating Action Buttons - Outside the form card as requested */}
