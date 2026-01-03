@@ -13,11 +13,101 @@ export interface FormElement {
   }
 }
 
+export interface FormSection {
+  id: string
+  type: "container" | "input-zone"
+  title?: string
+  layout: {
+    width: "full" | "half" | "third" | "quarter" | "custom"
+    customWidth?: string
+    padding: {
+      top: number
+      right: number
+      bottom: number
+      left: number
+    }
+    margin: {
+      top: number
+      right: number
+      bottom: number
+      left: number
+    }
+    backgroundColor: string
+    backgroundGradient?: {
+      enabled: boolean
+      type: "linear" | "radial"
+      colors: string[]
+      angle: number
+    }
+    glassmorphism?: {
+      enabled: boolean
+      blur: number
+      opacity: number
+    }
+    borderColor: string
+    borderWidth: number
+    borderRadius: number
+    shadow?: {
+      enabled: boolean
+      x: number
+      y: number
+      blur: number
+      spread: number
+      color: string
+    }
+    alignment: "left" | "center" | "right"
+    direction: "column" | "row"
+    gap: number
+  }
+  elements: FormElement[]
+  children: FormSection[]
+}
+
 export interface FormPage {
   id: string
   title: string
   type: "welcome" | "form" | "ending"
-  elements: FormElement[]
+  sections: FormSection[]
+  layout: {
+    // Canvas (Outer Area)
+    canvasBackground: string
+    canvasGradient?: {
+      enabled: boolean
+      type: "linear" | "radial"
+      colors: string[]
+      angle: number
+    }
+    
+    // Card (Combined Section Container)
+    backgroundColor: string // Kept for backward compat but used for card
+    backgroundGradient?: {
+      enabled: boolean
+      type: "linear" | "radial"
+      colors: string[]
+      angle: number
+    }
+    borderColor: string
+    borderWidth: number
+    borderRadius: number
+    shadow?: {
+      enabled: boolean
+      x: number
+      y: number
+      blur: number
+      spread: number
+      color: string
+    }
+    padding: {
+      top: number
+      right: number
+      bottom: number
+      left: number
+    }
+    textColor: string
+    maxWidth: "sm" | "md" | "lg" | "xl" | "full" | "custom"
+    customMaxWidth?: string
+    alignment: "left" | "center" | "right"
+  }
 }
 
 export interface FormData {

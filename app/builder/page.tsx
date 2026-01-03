@@ -2,14 +2,12 @@
 
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
-import { FormBuilder } from "@/components/form-builder"
+import { FormBuilderRedesign } from "@/components/form-builder-redesign"
 
 export default function BuilderPage() {
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="h-screen w-screen overflow-hidden">
-        <FormBuilder />
-      </div>
+      <FormBuilderRedesign />
     </DndProvider>
   )
 }

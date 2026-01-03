@@ -1,46 +1,87 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import Image from "next/image"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Sparkles,
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Separator } from "@/components/ui/separator"
+import { 
   Plus,
   Search,
   Filter,
-  MoreHorizontal,
+  Star,
+  FileText,
+  BarChart3,
+  Settings,
+  Share2,
+  MoreVertical,
+  Download,
+  Trash2,
+  Copy,
   Eye,
-  Edit,
+  Pencil,
+  CheckCircle2,
+  Clock,
+  Folder,
+  PlusCircle,
+  LayoutGrid,
+  List,
   Users,
   Calendar,
-  Settings,
+  Briefcase,
+  MessageSquare,
   Bell,
-  FileText,
-  Folder,
-  Star,
-  Share2,
+  TrendingUp,
+  Upload,
   Globe,
   Lock,
-  TrendingUp,
-  Download,
-  Upload,
+  Edit,
+  MoreHorizontal,
+  Sparkles
 } from "lucide-react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+
+// Create a filled star component
+const StarFilledIcon = (props: React.ComponentProps<typeof Star>) => (
+  <Star fill="currentColor" {...props} />
+)
+
+const formTemplates = [
+  { id: 'blank', name: 'Blank Form', icon: FileText, description: 'Start from scratch' },
+  { id: 'contact', name: 'Contact Form', icon: Users, description: 'Collect contact information' },
+  { id: 'survey', name: 'Survey', icon: BarChart3, description: 'Create a survey' },
+  { id: 'event', name: 'Event Registration', icon: Calendar, description: 'Register attendees' },
+  { id: 'job', name: 'Job Application', icon: Briefcase, description: 'Collect job applications' },
+  { id: 'feedback', name: 'Customer Feedback', icon: MessageSquare, description: 'Get customer insights' },
+]
 
 export default function DashboardPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [newFormData, setNewFormData] = useState({ title: "", description: "", template: "" })
   const router = useRouter()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [newFormData, setNewFormData] = useState({ 
+    title: "", 
+    description: "", 
+    template: "blank",
+    folder: "",
+    isPublic: false
+  })
+  const [activeTab, setActiveTab] = useState("all")
+  const [selectedForm, setSelectedForm] = useState(null)
+  const [isFormMenuOpen, setIsFormMenuOpen] = useState<number | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
 
   // Mock data with more comprehensive form management
   const forms = [
@@ -49,8 +90,8 @@ export default function DashboardPage() {
       title: "Customer Feedback Survey",
       description: "Collect customer satisfaction data and improve our services",
       responses: 247,
-      status: "Published",
-      lastModified: "2 hours ago",
+      status: "published",
+      lastModified: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
       isStarred: true,
       category: "survey",
       views: 1250,
@@ -62,8 +103,8 @@ export default function DashboardPage() {
       title: "Lead Generation Form",
       description: "Capture potential customer information for sales team",
       responses: 89,
-      status: "Draft",
-      lastModified: "1 day ago",
+      status: "draft",
+      lastModified: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
       isStarred: false,
       category: "lead",
       views: 0,
@@ -75,8 +116,8 @@ export default function DashboardPage() {
       title: "Event Registration",
       description: "Register attendees for upcoming tech conference",
       responses: 156,
-      status: "Published",
-      lastModified: "3 days ago",
+      status: "published",
+      lastModified: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
       isStarred: true,
       category: "event",
       views: 890,
@@ -88,8 +129,8 @@ export default function DashboardPage() {
       title: "Job Application Form",
       description: "Collect job applications and resumes for HR department",
       responses: 34,
-      status: "Published",
-      lastModified: "1 week ago",
+      status: "published",
+      lastModified: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
       isStarred: false,
       category: "hr",
       views: 234,
@@ -101,8 +142,8 @@ export default function DashboardPage() {
       title: "Product Feedback",
       description: "Get user feedback on our latest product features",
       responses: 78,
-      status: "Published",
-      lastModified: "2 days ago",
+      status: "published",
+      lastModified: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
       isStarred: false,
       category: "feedback",
       views: 456,
@@ -184,7 +225,7 @@ export default function DashboardPage() {
     { id: "feedback", name: "Feedback", count: forms.filter((f) => f.category === "feedback").length },
   ]
 
-  const filteredForms = forms.filter((form) => {
+  const filteredForms = forms.filter((form: any) => {
     const matchesSearch =
       form.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       form.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -253,7 +294,8 @@ export default function DashboardPage() {
             {/* User Menu */}
             <div className="flex items-center space-x-4">
               <Button variant="ghost" size="sm" className="relative">
-                <Bell className="h-4 w-4" />
+                <Bell
+                 className="h-4 w-4" />
                 <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs"></span>
               </Button>
               <Button variant="ghost" size="sm">
@@ -475,7 +517,7 @@ export default function DashboardPage() {
                             <span>{form.responses} responses</span>
                             <span>{form.views} views</span>
                             <span>{form.conversionRate}% conversion</span>
-                            <span>Modified {form.lastModified}</span>
+                            <span>Modified {new Date(form.lastModified).toLocaleDateString('en-GB')}</span>
                           </div>
                         </div>
                       </div>
