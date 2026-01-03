@@ -28,6 +28,9 @@ const Navbar: React.FC = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
+              <Link href="/dashboard" className="text-gray-600 font-medium hover:text-blue-600 transition-colors">
+                Dashboard
+              </Link>
               <a href="#features" className="text-gray-600 font-medium">
                 Features
               </a>

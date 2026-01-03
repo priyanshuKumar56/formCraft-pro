@@ -5,18 +5,14 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
+import { useAppDispatch } from "@/store/hooks"
+import { setFormData, setActiveTab } from "@/store/slices/formSlice"
+import { PRESET_TEMPLATES } from "@/lib/templates"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
-import { 
+import {
   Plus,
   Search,
   Filter,
@@ -25,621 +21,325 @@ import {
   BarChart3,
   Settings,
   Share2,
-  MoreVertical,
-  Download,
   Trash2,
-  Copy,
   Eye,
-  Pencil,
-  CheckCircle2,
-  Clock,
-  Folder,
-  PlusCircle,
-  LayoutGrid,
-  List,
-  Users,
-  Calendar,
-  Briefcase,
-  MessageSquare,
-  Bell,
-  TrendingUp,
-  Upload,
-  Globe,
-  Lock,
   Edit,
   MoreHorizontal,
-  Sparkles
+  Sparkles,
+  LayoutGrid,
+  Clock,
+  ExternalLink,
+  ChevronRight,
+  Zap,
+  Layers,
+  Users,
+  Bell,
+  SearchIcon,
+  HardDrive
 } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
-// Create a filled star component
-const StarFilledIcon = (props: React.ComponentProps<typeof Star>) => (
-  <Star fill="currentColor" {...props} />
-)
-
-const formTemplates = [
-  { id: 'blank', name: 'Blank Form', icon: FileText, description: 'Start from scratch' },
-  { id: 'contact', name: 'Contact Form', icon: Users, description: 'Collect contact information' },
-  { id: 'survey', name: 'Survey', icon: BarChart3, description: 'Create a survey' },
-  { id: 'event', name: 'Event Registration', icon: Calendar, description: 'Register attendees' },
-  { id: 'job', name: 'Job Application', icon: Briefcase, description: 'Collect job applications' },
-  { id: 'feedback', name: 'Customer Feedback', icon: MessageSquare, description: 'Get customer insights' },
-]
-
 export default function DashboardPage() {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const [searchTerm, setSearchTerm] = useState("")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [newFormData, setNewFormData] = useState({ 
-    title: "", 
-    description: "", 
-    template: "blank",
-    folder: "",
-    isPublic: false
-  })
-  const [activeTab, setActiveTab] = useState("all")
-  const [selectedForm, setSelectedForm] = useState(null)
-  const [isFormMenuOpen, setIsFormMenuOpen] = useState<number | null>(null)
-  const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const [activeTab, setActiveTabFilter] = useState("all")
 
-  // Mock data with more comprehensive form management
+  const handleAdoptTemplate = (templateKey: string) => {
+    const template = PRESET_TEMPLATES[templateKey]
+    if (template) {
+      dispatch(setFormData(template))
+      dispatch(setActiveTab("create"))
+      router.push("/builder")
+    }
+  }
+
+  const handleCreateBlank = () => {
+    router.push("/builder")
+  }
+
   const forms = [
     {
       id: 1,
-      title: "Customer Feedback Survey",
-      description: "Collect customer satisfaction data and improve our services",
-      responses: 247,
+      title: "Product Launch Feedback",
+      responses: 124,
       status: "published",
-      lastModified: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      isStarred: true,
-      category: "survey",
-      views: 1250,
-      conversionRate: 68,
-      shareableLink: "https://formcraft.pro/f/customer-feedback-xyz",
+      date: "2 hours ago",
+      color: "from-indigo-500 to-purple-500",
+      accent: "bg-indigo-500"
     },
     {
       id: 2,
-      title: "Lead Generation Form",
-      description: "Capture potential customer information for sales team",
+      title: "Annual Survey 2024",
       responses: 89,
       status: "draft",
-      lastModified: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-      isStarred: false,
-      category: "lead",
-      views: 0,
-      conversionRate: 0,
-      shareableLink: null,
+      date: "5 hours ago",
+      color: "from-emerald-500 to-teal-500",
+      accent: "bg-emerald-500"
     },
     {
       id: 3,
-      title: "Event Registration",
-      description: "Register attendees for upcoming tech conference",
-      responses: 156,
+      title: "Contact Form",
+      responses: 32,
       status: "published",
-      lastModified: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-      isStarred: true,
-      category: "event",
-      views: 890,
-      conversionRate: 72,
-      shareableLink: "https://formcraft.pro/f/event-registration-abc",
-    },
-    {
-      id: 4,
-      title: "Job Application Form",
-      description: "Collect job applications and resumes for HR department",
-      responses: 34,
-      status: "published",
-      lastModified: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
-      isStarred: false,
-      category: "hr",
-      views: 234,
-      conversionRate: 45,
-      shareableLink: "https://formcraft.pro/f/job-application-def",
-    },
-    {
-      id: 5,
-      title: "Product Feedback",
-      description: "Get user feedback on our latest product features",
-      responses: 78,
-      status: "published",
-      lastModified: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      isStarred: false,
-      category: "feedback",
-      views: 456,
-      conversionRate: 62,
-      shareableLink: "https://formcraft.pro/f/product-feedback-ghi",
-    },
-  ]
-
-  const templates = [
-    {
-      id: 1,
-      name: "Contact Form",
-      description: "Simple contact form with name, email, and message",
-      category: "Business",
-      color: "bg-blue-500",
-      icon: "📧",
-      uses: 1250,
-    },
-    {
-      id: 2,
-      name: "Customer Survey",
-      description: "Comprehensive customer satisfaction survey",
-      category: "Research",
-      color: "bg-green-500",
-      icon: "📊",
-      uses: 890,
-    },
-    {
-      id: 3,
-      name: "Event Registration",
-      description: "Event registration with attendee details",
-      category: "Events",
-      color: "bg-purple-500",
-      icon: "🎟️",
-      uses: 567,
-    },
-    {
-      id: 4,
-      name: "Job Application",
-      description: "Complete job application form with file upload",
-      category: "HR",
-      color: "bg-orange-500",
-      icon: "💼",
-      uses: 445,
-    },
-    {
-      id: 5,
-      name: "Newsletter Signup",
-      description: "Simple newsletter subscription form",
-      category: "Marketing",
-      color: "bg-pink-500",
-      icon: "📰",
-      uses: 1100,
-    },
-    {
-      id: 6,
-      name: "Feedback Form",
-      description: "Product or service feedback collection",
-      category: "Customer",
-      color: "bg-indigo-500",
-      icon: "💬",
-      uses: 678,
-    },
-  ]
-
-  const workspaces = [
-    { id: 1, name: "Marketing Team", forms: 12, members: 5, color: "bg-blue-100 text-blue-800" },
-    { id: 2, name: "HR Department", forms: 8, members: 3, color: "bg-green-100 text-green-800" },
-    { id: 3, name: "Product Research", forms: 15, members: 7, color: "bg-purple-100 text-purple-800" },
-    { id: 4, name: "Sales Team", forms: 6, members: 4, color: "bg-orange-100 text-orange-800" },
-  ]
-
-  const categories = [
-    { id: "all", name: "All Forms", count: forms.length },
-    { id: "survey", name: "Surveys", count: forms.filter((f) => f.category === "survey").length },
-    { id: "lead", name: "Lead Gen", count: forms.filter((f) => f.category === "lead").length },
-    { id: "event", name: "Events", count: forms.filter((f) => f.category === "event").length },
-    { id: "hr", name: "HR", count: forms.filter((f) => f.category === "hr").length },
-    { id: "feedback", name: "Feedback", count: forms.filter((f) => f.category === "feedback").length },
-  ]
-
-  const filteredForms = forms.filter((form: any) => {
-    const matchesSearch =
-      form.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      form.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || form.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
-
-  const handleCreateForm = (template?: string) => {
-    if (template) {
-      setNewFormData({ ...newFormData, template })
+      date: "1 day ago",
+      color: "from-blue-500 to-cyan-500",
+      accent: "bg-blue-500"
     }
-    router.push("/builder")
-  }
-
-  const handleEditForm = (formId: number) => {
-    router.push("/builder")
-  }
-
-  const handleCopyLink = async (link: string) => {
-    await navigator.clipboard.writeText(link)
-    // You could add a toast notification here
-  }
-
-  const handleDeleteForm = (formId: number) => {
-    // Implement delete functionality
-    console.log("Delete form:", formId)
-  }
-
-  const handleStarForm = (formId: number) => {
-    // Implement star/unstar functionality
-    console.log("Star form:", formId)
-  }
+  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center space-x-2">
-                <Image 
-                  src="/fs-logo.jpg"
-                  alt="FormCraft Pro Logo"
-                  width={62}
-                  height={62}
-                  className="rounded-full"/>
-                <span className="text-xl font-bold text-gray-900">FormCraft Pro</span>
-              </Link>
+    <div className="min-h-screen bg-[#FDFDFF] text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+
+      {/* Sidebar - Modern & Sleek */}
+      <aside className="fixed left-0 top-0 h-screen w-72 bg-white border-r border-slate-100 p-8 hidden lg:flex flex-col z-50">
+        <div className="flex items-center gap-3 mb-12">
+          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
+            <Layers className="h-6 w-6 text-white" />
+          </div>
+          <span className="text-xl font-black tracking-tighter text-slate-900">FormCraft <span className="text-indigo-600">Pro</span></span>
+        </div>
+
+        <nav className="flex-1 space-y-1">
+          <SidebarLink icon={<LayoutGrid size={18} />} label="All Forms" active />
+          <SidebarLink icon={<Star size={18} />} label="Favorites" />
+          <SidebarLink icon={<Zap size={18} />} label="Workflows" />
+          <SidebarLink icon={<BarChart3 size={18} />} label="Analytics" />
+          <SidebarLink icon={<Users size={18} />} label="Team" />
+        </nav>
+
+        <div className="pt-8 mt-8 border-t border-slate-50">
+          <div className="p-5 bg-slate-50 rounded-[2rem] border border-slate-100">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Storage</span>
+              <span className="text-[10px] font-black text-indigo-600">Upgrade</span>
+            </div>
+            <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden mb-3">
+              <div className="h-full w-[65%] bg-indigo-600 rounded-full" />
+            </div>
+            <p className="text-[11px] font-bold text-slate-600">1.2GB of 2.0GB used</p>
+          </div>
+        </div>
+
+        <div className="mt-8 flex items-center gap-3 p-2 hover:bg-slate-50 rounded-2xl transition-all cursor-pointer">
+          <Avatar className="h-10 w-10 border-2 border-white shadow-md">
+            <AvatarFallback className="bg-indigo-500 text-white font-black text-xs">PK</AvatarFallback>
+          </Avatar>
+          <div>
+            <span className="block text-sm font-black text-slate-900 leading-none mb-1">Priyanshu K.</span>
+            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pro Scholar</span>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="lg:pl-72 min-h-screen">
+
+        {/* Top Header */}
+        <header className="sticky top-0 bg-white/80 backdrop-blur-xl border-b border-slate-100 z-40 px-8 lg:px-12 h-20 flex items-center justify-between gap-8">
+          <div className="relative flex-1 max-w-2xl group">
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+            <input
+              type="text"
+              placeholder="Search your forms, templates and analytics..."
+              className="w-full h-12 bg-slate-50 border-transparent rounded-[1.25rem] pl-12 pr-6 text-sm font-medium outline-none focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all border border-slate-100/50"
+            />
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" className="h-12 w-12 p-0 rounded-2xl text-slate-400 hover:text-slate-900 border border-transparent hover:border-slate-100 transition-all relative">
+              <Bell size={20} />
+              <span className="absolute top-3 right-3 w-2 h-2 bg-indigo-600 rounded-full border-2 border-white" />
+            </Button>
+            <Button onClick={handleCreateBlank} className="h-12 px-8 bg-slate-900 text-white hover:bg-black rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all active:scale-95">
+              <Plus size={18} className="mr-2" /> Create New
+            </Button>
+          </div>
+        </header>
+
+        {/* Content Section */}
+        <div className="p-8 lg:p-12 max-w-7xl mx-auto space-y-16">
+
+          {/* Hero / Quick Templates */}
+          <section>
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-1">Start with a Blueprint</h2>
+                <p className="text-sm font-medium text-slate-400">Jumpstart your workflow with these designer-crafted layouts.</p>
+              </div>
+              <Button variant="ghost" className="text-indigo-600 font-black text-xs uppercase tracking-widest gap-2">View All Templates <ChevronRight size={14} /></Button>
             </div>
 
-            {/* Search */}
-            <div className="flex-1 max-w-lg mx-8">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search forms, templates, workspaces..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-white/70 backdrop-blur-sm border-gray-200/50"
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+              {/* Blank Template */}
+              <div
+                onClick={handleCreateBlank}
+                className="group cursor-pointer aspect-[4/3] bg-white border-2 border-slate-100 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 hover:border-indigo-600 hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 relative overflow-hidden"
+              >
+                <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                  <Plus size={32} />
+                </div>
+                <div className="text-center">
+                  <span className="block font-black text-slate-900">Blank Canvas</span>
+                  <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Start from scratch</span>
+                </div>
+              </div>
+
+              {/* Feedback Template */}
+              <TemplateCard
+                onClick={() => handleAdoptTemplate('feedback')}
+                title="Customer Feedback"
+                icon={<Sparkles size={24} />}
+                accent="bg-indigo-600"
+                color="from-indigo-600 to-violet-600"
+              />
+
+              {/* Contact Template */}
+              <TemplateCard
+                onClick={() => handleAdoptTemplate('contact')}
+                title="Minimal Contact"
+                icon={<Edit size={24} />}
+                accent="bg-slate-900"
+                color="from-slate-900 to-slate-700"
+              />
+
+              {/* Registration Template */}
+              <TemplateCard
+                onClick={() => handleAdoptTemplate('registration')}
+                title="Event RSVP"
+                icon={<Zap size={24} />}
+                accent="bg-orange-500"
+                color="from-orange-500 to-rose-500"
+              />
+
+            </div>
+          </section>
+
+          {/* Recent Forms List */}
+          <section>
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Your Projects</h2>
+                <Badge className="bg-slate-100 text-slate-500 hover:bg-slate-100 border-none px-3 font-bold rounded-lg text-xs">24 Total</Badge>
+              </div>
+              <div className="flex bg-white border border-slate-100 rounded-xl p-1">
+                <Button variant="ghost" size="sm" className="h-8 px-3 rounded-lg bg-slate-50 text-slate-900 font-bold">Grid</Button>
+                <Button variant="ghost" size="sm" className="h-8 px-3 rounded-lg text-slate-400 font-bold">List</Button>
               </div>
             </div>
 
-            {/* User Menu */}
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="relative">
-                <Bell
-                 className="h-4 w-4" />
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs"></span>
-              </Button>
-              <Button variant="ghost" size="sm">
-                <Settings className="h-4 w-4" />
-              </Button>
-              <Avatar>
-                <AvatarFallback className="bg-blue-600 text-white">JD</AvatarFallback>
-              </Avatar>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {forms.map((form) => (
+                <FormCard key={form.id} form={form} />
+              ))}
             </div>
-          </div>
+          </section>
+
+          {/* Quick Analytics Mockup */}
+          <section className="bg-slate-900 rounded-[3rem] p-12 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-1000">
+              <BarChart3 size={240} className="text-white" />
+            </div>
+
+            <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/20 border border-indigo-500/30 rounded-full text-indigo-400 text-[10px] font-black uppercase tracking-widest">
+                  <Zap size={14} /> Performance Insights
+                </div>
+                <h2 className="text-4xl font-black text-white leading-tight">Your forms are performing <span className="text-indigo-400">24% better</span> this week.</h2>
+                <p className="text-slate-400 font-medium">We've analyzed your submission flow. Higher conversion rates detected on mobile layouts.</p>
+                <Button className="bg-white text-slate-900 hover:bg-slate-100 font-black rounded-2xl h-12 px-8 shadow-2xl transition-all">Go to Analytics</Button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <StatCard label="Total Submissions" value="1.2k" sub="+12% today" />
+                <StatCard label="Avg. Time" value="45s" sub="-5s improvement" />
+                <StatCard label="Unique Views" value="4.8k" sub="+840 this week" />
+                <StatCard label="Fill Rate" value="78%" sub="High conversion" />
+              </div>
+            </div>
+          </section>
+
         </div>
-      </header>
+      </main>
+    </div>
+  )
+}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, John!</h1>
-          <p className="text-gray-600">Here's what's happening with your forms today.</p>
+function SidebarLink({ icon, label, active = false }: { icon: any, label: string, active?: boolean }) {
+  return (
+    <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-all duration-300 group ${active ? "bg-indigo-50 text-indigo-600" : "text-slate-400 hover:bg-slate-50 hover:text-slate-900"}`}>
+      <div className={`transition-transform duration-300 group-hover:scale-110 ${active ? "scale-100" : "opacity-70 group-hover:opacity-100"}`}>
+        {icon}
+      </div>
+      <span className={`text-sm font-black tracking-tight ${active ? "opacity-100" : ""}`}>{label}</span>
+    </div>
+  )
+}
+
+function TemplateCard({ title, icon, accent, color, onClick }: any) {
+  return (
+    <div
+      onClick={onClick}
+      className="group cursor-pointer aspect-[4/3] bg-white border-2 border-slate-100 rounded-[2.5rem] flex flex-col p-8 hover:border-indigo-600 hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 relative overflow-hidden"
+    >
+      <div className={`w-12 h-12 ${accent} rounded-2xl flex items-center justify-center text-white mb-auto shadow-lg shadow-slate-100 transition-transform group-hover:scale-110 duration-500`}>
+        {icon}
+      </div>
+      <div>
+        <span className="block font-black text-slate-900 text-lg mb-1">{title}</span>
+        <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Premium Blueprint</span>
+      </div>
+      <div className={`absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-br ${color} opacity-[0.03] group-hover:opacity-[0.08] group-hover:scale-150 transition-all duration-1000 -mr-8 -mb-8 rounded-full`} />
+    </div>
+  )
+}
+
+function FormCard({ form }: any) {
+  return (
+    <div className="group bg-white border border-slate-100 rounded-[2.5rem] p-8 hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500 flex flex-col gap-6 relative overflow-hidden">
+      <div className="flex items-center justify-between">
+        <div className={`h-10 px-4 rounded-xl ${form.accent} bg-opacity-10 flex items-center gap-2`}>
+          <span className={`w-2 h-2 rounded-full ${form.accent} animate-pulse`} />
+          <span className={`text-[10px] font-black uppercase tracking-widest ${form.accent.replace('bg-', 'text-')}`}>{form.status}</span>
         </div>
+        <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-xl text-slate-300 hover:text-slate-900">
+          <MoreHorizontal size={20} />
+        </Button>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {[
-            { title: "Total Forms", value: "24", icon: FileText, change: "+12%", color: "bg-blue-500" },
-            { title: "Total Responses", value: "1,247", icon: Users, change: "+23%", color: "bg-green-500" },
-            { title: "Avg Conversion", value: "68%", icon: TrendingUp, change: "+5%", color: "bg-purple-500" },
-            { title: "Active Forms", value: "18", icon: Eye, change: "+8%", color: "bg-orange-500" },
-          ].map((stat, index) => (
-            <Card
-              key={index}
-              className="bg-white/70 backdrop-blur-sm border-white/20 shadow-lg hover:shadow-xl transition-all"
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                    <p className="text-sm text-green-600">{stat.change} from last month</p>
-                  </div>
-                  <div className={`p-3 ${stat.color} rounded-full`}>
-                    <stat.icon className="h-6 w-6 text-white" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+      <div className="flex flex-col gap-2">
+        <h3 className="text-xl font-black text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">{form.title}</h3>
+        <p className="text-sm font-medium text-slate-400">Modified {form.date}</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mt-auto">
+        <div className="p-4 bg-slate-50 rounded-2xl flex flex-col">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Responses</span>
+          <span className="text-lg font-black text-slate-900">{form.responses}</span>
         </div>
-
-        <div className="grid lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Quick Actions */}
-            <Card className="bg-white/70 backdrop-blur-sm border-white/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create New Form
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Create New Form</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="title">Form Title</Label>
-                        <Input
-                          id="title"
-                          value={newFormData.title}
-                          onChange={(e) => setNewFormData({ ...newFormData, title: e.target.value })}
-                          placeholder="Enter form title..."
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea
-                          id="description"
-                          value={newFormData.description}
-                          onChange={(e) => setNewFormData({ ...newFormData, description: e.target.value })}
-                          placeholder="Describe your form..."
-                        />
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button onClick={() => handleCreateForm()} className="flex-1">
-                          Start from Scratch
-                        </Button>
-                        <Button variant="outline" onClick={() => handleCreateForm("template")} className="flex-1">
-                          Use Template
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                <Button variant="outline" className="w-full bg-transparent">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import Form
-                </Button>
-                <Button variant="outline" className="w-full bg-transparent">
-                  <Folder className="h-4 w-4 mr-2" />
-                  New Workspace
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Categories */}
-            <Card className="bg-white/70 backdrop-blur-sm border-white/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg">Categories</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {categories.map((category) => (
-                    <button
-                      key={category.id}
-                      onClick={() => setSelectedCategory(category.id)}
-                      className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors ${
-                        selectedCategory === category.id ? "bg-blue-100 text-blue-800" : "hover:bg-gray-100"
-                      }`}
-                    >
-                      <span className="text-sm font-medium">{category.name}</span>
-                      <Badge variant="secondary" className="text-xs">
-                        {category.count}
-                      </Badge>
-                    </button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Workspaces */}
-            <Card className="bg-white/70 backdrop-blur-sm border-white/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Folder className="h-5 w-5" />
-                  <span>Workspaces</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {workspaces.map((workspace) => (
-                    <div
-                      key={workspace.id}
-                      className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-                    >
-                      <div>
-                        <h4 className="font-medium text-gray-900">{workspace.name}</h4>
-                        <p className="text-sm text-gray-600">
-                          {workspace.forms} forms • {workspace.members} members
-                        </p>
-                      </div>
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${workspace.color}`}>Active</div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Main Content */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Forms Section */}
-            <Card className="bg-white/70 backdrop-blur-sm border-white/20 shadow-lg">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center space-x-2">
-                    <FileText className="h-5 w-5" />
-                    <span>My Forms</span>
-                    <Badge variant="secondary">{filteredForms.length}</Badge>
-                  </CardTitle>
-                  <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm">
-                      <Filter className="h-4 w-4 mr-2" />
-                      Filter
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {filteredForms.map((form) => (
-                    <div
-                      key={form.id}
-                      className="flex items-center justify-between p-4 border border-gray-200/50 rounded-lg hover:bg-white/50 transition-all backdrop-blur-sm"
-                    >
-                      <div className="flex items-center space-x-4 flex-1">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                          <FileText className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <h3 className="font-semibold text-gray-900">{form.title}</h3>
-                            {form.isStarred && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
-                            <Badge variant={form.status === "Published" ? "default" : "secondary"} className="text-xs">
-                              {form.status === "Published" ? (
-                                <>
-                                  <Globe className="h-3 w-3 mr-1" />
-                                  Published
-                                </>
-                              ) : (
-                                <>
-                                  <Lock className="h-3 w-3 mr-1" />
-                                  Draft
-                                </>
-                              )}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-gray-600 mb-2">{form.description}</p>
-                          <div className="flex items-center space-x-4 text-xs text-gray-500">
-                            <span>{form.responses} responses</span>
-                            <span>{form.views} views</span>
-                            <span>{form.conversionRate}% conversion</span>
-                            <span>Modified {new Date(form.lastModified).toLocaleDateString('en-GB')}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {form.shareableLink && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleCopyLink(form.shareableLink!)}
-                            title="Copy shareable link"
-                          >
-                            <Share2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                        <Button variant="ghost" size="sm" title="Preview form">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleEditForm(form.id)} title="Edit form">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleStarForm(form.id)}
-                          title={form.isStarred ? "Remove from favorites" : "Add to favorites"}
-                        >
-                          <Star className={`h-4 w-4 ${form.isStarred ? "text-yellow-500 fill-current" : ""}`} />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Templates Section */}
-            <Card className="bg-white/70 backdrop-blur-sm border-white/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Sparkles className="h-5 w-5" />
-                  <span>Form Templates</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {templates.map((template) => (
-                    <div
-                      key={template.id}
-                      className="group cursor-pointer p-4 border border-gray-200/50 rounded-lg hover:shadow-lg transition-all backdrop-blur-sm hover:bg-white/50"
-                      onClick={() => handleCreateForm(template.name)}
-                    >
-                      <div className={`h-20 ${template.color} rounded-lg relative overflow-hidden mb-3`}>
-                        <div className="absolute inset-0 bg-white/10 group-hover:bg-white/20 transition-colors flex items-center justify-center">
-                          <span className="text-2xl">{template.icon}</span>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 mb-1">{template.name}</h3>
-                        <p className="text-sm text-gray-600 mb-2">{template.description}</p>
-                        <div className="flex items-center justify-between">
-                          <Badge variant="outline" className="text-xs">
-                            {template.category}
-                          </Badge>
-                          <span className="text-xs text-gray-500">{template.uses} uses</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recent Activity */}
-            <Card className="bg-white/70 backdrop-blur-sm border-white/20 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Calendar className="h-5 w-5" />
-                  <span>Recent Activity</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { action: "Form published", form: "Customer Survey", time: "2 hours ago", type: "publish" },
-                    { action: "New response", form: "Lead Generation", time: "4 hours ago", type: "response" },
-                    { action: "Form edited", form: "Event Registration", time: "1 day ago", type: "edit" },
-                    { action: "Workspace created", form: "Marketing Team", time: "2 days ago", type: "workspace" },
-                    { action: "Template used", form: "Contact Form", time: "3 days ago", type: "template" },
-                  ].map((activity, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50/50 transition-colors"
-                    >
-                      <div
-                        className={`w-2 h-2 rounded-full mt-2 ${
-                          activity.type === "publish"
-                            ? "bg-green-500"
-                            : activity.type === "response"
-                              ? "bg-blue-500"
-                              : activity.type === "edit"
-                                ? "bg-yellow-500"
-                                : activity.type === "workspace"
-                                  ? "bg-purple-500"
-                                  : "bg-gray-500"
-                        }`}
-                      ></div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                        <p className="text-sm text-gray-600">{activity.form}</p>
-                        <p className="text-xs text-gray-500">{activity.time}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+        <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex flex-col group/action cursor-pointer hover:bg-indigo-600 transition-all duration-300">
+          <span className="text-[10px] font-black text-indigo-600 group-hover/action:text-indigo-100 uppercase tracking-widest mb-1 transition-colors">Actions</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-indigo-900 group-hover/action:text-white transition-colors">Edit Form</span>
+            <ChevronRight size={14} className="text-indigo-400 group-hover/action:text-white transition-all transform group-hover/action:translate-x-1" />
           </div>
         </div>
       </div>
+
+      {/* Visual Decoration */}
+      <div className={`absolute -top-12 -right-12 w-24 h-24 bg-gradient-to-br ${form.color} opacity-5 blur-3xl`} />
+    </div>
+  )
+}
+
+function StatCard({ label, value, sub }: any) {
+  return (
+    <div className="p-6 bg-white/5 border border-white/10 rounded-3xl hover:bg-white/10 transition-colors">
+      <span className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">{label}</span>
+      <span className="block text-3xl font-black text-white mb-1 tracking-tight">{value}</span>
+      <span className="block text-[10px] font-bold text-indigo-400">{sub}</span>
     </div>
   )
 }

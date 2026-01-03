@@ -119,7 +119,7 @@ export interface FormData {
   pages: FormPage[]
   settings: {
     theme: string
-    headerStyle: "gradient" | "solid"
+    headerStyle: string
     showLogo: boolean
     backgroundColor: string
     textColor: string
