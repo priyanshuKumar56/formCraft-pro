@@ -1,16 +1,12 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useCallback } from "react"
 import { useAppSelector, useAppDispatch } from "@/store/hooks"
 import {
-    setCurrentPageIndex,
-    setSelectedElement,
-    setSettingsSidebarOpen,
-    setActiveTab,
     addElement,
     updateElement,
     deleteElement,
-    moveElement,
+    reorderElements,
     addPage,
     updatePage,
     deletePage,
@@ -23,6 +19,14 @@ import {
     deleteSection,
     moveSection,
 } from "@/store/slices/formSlice"
+import {
+    setCurrentPageIndex,
+    setSelectedElementId,
+    setSettingsSidebarOpen,
+    setActiveTab,
+    setLeftPanelOpen,
+    setLeftPanelTab,
+} from "@/store/slices/uiSlice"
 import { ModernHeader } from "./header"
 import { ToolboxPanel } from "./toolbox-panel"
 import { PropertiesPanel } from "./properties-panel"
@@ -32,64 +36,83 @@ import { WorkflowCanvas } from "../workflow-canvas"
 import { ResultsView } from "../results-view"
 import { ConnectView } from "../connect-view"
 import type { FormSection } from "@/types/form"
+import { generateId } from "@/lib/utils"
 
 export function FormBuilderRedesign() {
     const dispatch = useAppDispatch()
-    const { formData, currentPageIndex, selectedElement, settingsSidebarOpen, activeTab } = useAppSelector(
-        (state) => state.form,
-    )
-    const [leftPanelOpen, setLeftPanelOpen] = useState(true)
-    const [leftPanelTab, setLeftPanelTab] = useState<"elements" | "pages">("elements")
+    const { formData } = useAppSelector((state) => state.form)
+    const {
+        currentPageIndex,
+        selectedElementId,
+        isSettingsSidebarOpen,
+        activeTab,
+        isLeftPanelOpen,
+        leftPanelTab
+    } = useAppSelector((state) => state.ui)
 
     const currentPage = formData.pages[currentPageIndex]
 
     // Element handlers
     const handleAddElement = useCallback((elementType: string, position?: number, sectionId?: string) => {
-        dispatch(addElement({ type: elementType, position, sectionId }))
-    }, [dispatch])
+        const id = generateId()
+        dispatch(addElement({ id, type: elementType, pageIndex: currentPageIndex, position, sectionId }))
+        dispatch(setSelectedElementId(id))
+        dispatch(setSettingsSidebarOpen(true))
+    }, [dispatch, currentPageIndex])
 
     const handleUpdateElement = useCallback((id: string, updates: Record<string, unknown>) => {
-        dispatch(updateElement({ id, updates }))
-    }, [dispatch])
+        dispatch(updateElement({ id, pageIndex: currentPageIndex, updates }))
+    }, [dispatch, currentPageIndex])
 
     const handleDeleteElement = useCallback((id: string) => {
-        dispatch(deleteElement(id))
-    }, [dispatch])
+        dispatch(deleteElement({ id, pageIndex: currentPageIndex }))
+        if (selectedElementId === id) {
+            dispatch(setSelectedElementId(null))
+        }
+    }, [dispatch, currentPageIndex, selectedElementId])
 
     const handleMoveElement = useCallback((dragIndex: number, hoverIndex: number, sectionId?: string) => {
-        dispatch(moveElement({ dragIndex, hoverIndex, sectionId }))
-    }, [dispatch])
+        dispatch(reorderElements({ dragIndex, hoverIndex, pageIndex: currentPageIndex, sectionId }))
+    }, [dispatch, currentPageIndex])
 
     const handleSelectElement = useCallback((id: string | null) => {
-        dispatch(setSelectedElement(id))
-        dispatch(setSettingsSidebarOpen(true))
+        dispatch(setSelectedElementId(id))
+        if (id) {
+            dispatch(setSettingsSidebarOpen(true))
+        }
     }, [dispatch])
 
     // Section handlers
     const handleAddSection = useCallback((type: "container" | "input-zone") => {
-        dispatch(addSection({ type }))
-    }, [dispatch])
+        dispatch(addSection({ pageIndex: currentPageIndex, type }))
+    }, [dispatch, currentPageIndex])
 
     const handleUpdateSection = useCallback((sectionId: string, updates: Partial<FormSection>) => {
-        dispatch(updateSection({ sectionId, updates }))
-    }, [dispatch])
+        dispatch(updateSection({ pageIndex: currentPageIndex, sectionId, updates }))
+    }, [dispatch, currentPageIndex])
 
     const handleDeleteSection = useCallback((sectionId: string) => {
-        dispatch(deleteSection(sectionId))
-    }, [dispatch])
+        dispatch(deleteSection({ pageIndex: currentPageIndex, sectionId }))
+        if (selectedElementId === sectionId) {
+            dispatch(setSelectedElementId(null))
+        }
+    }, [dispatch, currentPageIndex, selectedElementId])
 
     const handleMoveSection = useCallback((dragIndex: number, hoverIndex: number) => {
-        dispatch(moveSection({ dragIndex, hoverIndex }))
-    }, [dispatch])
+        dispatch(moveSection({ pageIndex: currentPageIndex, dragIndex, hoverIndex }))
+    }, [dispatch, currentPageIndex])
 
     // Page handlers
     const handlePageChange = useCallback((index: number) => {
         dispatch(setCurrentPageIndex(index))
+        dispatch(setSelectedElementId(null))
     }, [dispatch])
 
     const handleAddPage = useCallback(() => {
         dispatch(addPage())
-    }, [dispatch])
+        dispatch(setCurrentPageIndex(formData.pages.length))
+        dispatch(setSelectedElementId(null))
+    }, [dispatch, formData.pages.length])
 
     const handleUpdatePage = useCallback((pageIndex: number, updates: Record<string, unknown>) => {
         dispatch(updatePage({ pageIndex, updates }))
@@ -97,15 +120,11 @@ export function FormBuilderRedesign() {
 
     const handleDeletePage = useCallback((pageIndex: number) => {
         dispatch(deletePage(pageIndex))
-    }, [dispatch])
-
-    const handleMovePageUp = useCallback((pageIndex: number) => {
-        dispatch(movePageUp(pageIndex))
-    }, [dispatch])
-
-    const handleMovePageDown = useCallback((pageIndex: number) => {
-        dispatch(movePageDown(pageIndex))
-    }, [dispatch])
+        if (currentPageIndex >= pageIndex && currentPageIndex > 0) {
+            dispatch(setCurrentPageIndex(currentPageIndex - 1))
+        }
+        dispatch(setSelectedElementId(null))
+    }, [dispatch, currentPageIndex])
 
     // Form handlers
     const handlePreview = useCallback(() => {
@@ -128,20 +147,28 @@ export function FormBuilderRedesign() {
                     <div className="flex-1 flex overflow-hidden">
                         {/* Left Panel - Toolbox/Pages */}
                         <ToolboxPanel
-                            isOpen={leftPanelOpen}
-                            onToggle={() => setLeftPanelOpen(!leftPanelOpen)}
+                            isOpen={isLeftPanelOpen}
+                            onToggle={() => dispatch(setLeftPanelOpen(!isLeftPanelOpen))}
                             activeTab={leftPanelTab}
-                            onTabChange={setLeftPanelTab}
+                            onTabChange={(tab: "elements" | "pages") => dispatch(setLeftPanelTab(tab))}
                             pages={formData.pages}
                             currentPageIndex={currentPageIndex}
                             onPageChange={handlePageChange}
                             onAddPage={handleAddPage}
                             onUpdatePage={handleUpdatePage}
                             onDeletePage={handleDeletePage}
-                            onMovePageUp={handleMovePageUp}
-                            onMovePageDown={handleMovePageDown}
+                            onMovePageUp={(idx: number) => {
+                                dispatch(movePageUp(idx))
+                                if (currentPageIndex === idx) dispatch(setCurrentPageIndex(idx - 1))
+                                else if (currentPageIndex === idx - 1) dispatch(setCurrentPageIndex(idx))
+                            }}
+                            onMovePageDown={(idx: number) => {
+                                dispatch(movePageDown(idx))
+                                if (currentPageIndex === idx) dispatch(setCurrentPageIndex(idx + 1))
+                                else if (currentPageIndex === idx + 1) dispatch(setCurrentPageIndex(idx))
+                            }}
                             onAddElement={handleAddElement}
-                            currentPageTitle={currentPage.title}
+                            currentPageTitle={currentPage?.title || ""}
                         />
 
                         {/* Main Canvas Area */}
@@ -156,7 +183,7 @@ export function FormBuilderRedesign() {
                             {/* Canvas */}
                             <FormCanvas
                                 currentPage={currentPage}
-                                selectedElement={selectedElement}
+                                selectedElement={selectedElementId}
                                 onSelectElement={handleSelectElement}
                                 onUpdateElement={handleUpdateElement}
                                 onDeleteElement={handleDeleteElement}
@@ -171,11 +198,11 @@ export function FormBuilderRedesign() {
 
                         {/* Right Panel - Properties */}
                         <PropertiesPanel
-                            isOpen={settingsSidebarOpen}
-                            onToggle={() => dispatch(setSettingsSidebarOpen(!settingsSidebarOpen))}
-                            selectedElement={selectedElement}
-                            formElement={selectedElement ? currentPage.sections.flatMap((s) => s.elements).find((el) => el.id === selectedElement) : null}
-                            formSection={selectedElement ? currentPage.sections.find((s) => s.id === selectedElement) : null}
+                            isOpen={isSettingsSidebarOpen}
+                            onToggle={() => dispatch(setSettingsSidebarOpen(!isSettingsSidebarOpen))}
+                            selectedElement={selectedElementId}
+                            formElement={selectedElementId ? currentPage?.sections.flatMap((s) => s.elements).find((el) => el.id === selectedElementId) : null}
+                            formSection={selectedElementId ? currentPage?.sections.find((s) => s.id === selectedElementId) : null}
                             onUpdateElement={handleUpdateElement}
                             onUpdateSection={handleUpdateSection}
                             currentPage={currentPage}

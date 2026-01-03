@@ -4,12 +4,6 @@ import { generateId } from "@/lib/utils"
 
 interface FormState {
   formData: FormData
-  currentPageIndex: number
-  selectedElement: string | null
-  settingsSidebarOpen: boolean
-  activeTab: "create" | "workflow" | "connect" | "results"
-  shareableLink: string | null
-  isPublished: boolean
 }
 
 const initialState: FormState = {
@@ -145,51 +139,30 @@ const initialState: FormState = {
       textColor: "#000000",
     },
   },
-  currentPageIndex: 0,
-  selectedElement: null,
-  settingsSidebarOpen: true,
-  activeTab: "create",
-  shareableLink: null,
-  isPublished: false,
-};
+}
 
 const formSlice = createSlice({
-  name: 'form',
+  name: "form",
   initialState,
   reducers: {
-    // Form data actions
     setFormData: (state, action: PayloadAction<FormData>) => {
       state.formData = action.payload
     },
 
-    setCurrentPageIndex: (state, action: PayloadAction<number>) => {
-      state.currentPageIndex = action.payload
-    },
-
-    setSelectedElement: (state, action: PayloadAction<string | null>) => {
-      state.selectedElement = action.payload
-    },
-
-    setSettingsSidebarOpen: (state, action: PayloadAction<boolean>) => {
-      state.settingsSidebarOpen = action.payload
-    },
-
-    setActiveTab: (state, action: PayloadAction<"create" | "workflow" | "connect" | "results">) => {
-      state.activeTab = action.payload
-    },
-
     // Element actions
-    addElement: (state, action: PayloadAction<{ type: string; position?: number; sectionId?: string }>) => {
-      const { type, position, sectionId } = action.payload
+    addElement: (state, action: PayloadAction<{ id: string; type: string; pageIndex: number; position?: number; sectionId?: string }>) => {
+      const { id, type, pageIndex, position, sectionId } = action.payload
       const newElement: FormElement = {
-        id: generateId(),
+        id,
         type,
-        label: getDefaultLabel(type, state.formData.pages[state.currentPageIndex]?.type === "welcome"),
+        label: getDefaultLabel(type, state.formData.pages[pageIndex]?.type === "welcome"),
         placeholder: getDefaultPlaceholder(type),
         required: false,
       }
       
-      const currentPage = state.formData.pages[state.currentPageIndex]
+      const currentPage = state.formData.pages[pageIndex]
+      if (!currentPage) return
+
       const targetSection = sectionId 
         ? currentPage.sections.find(s => s.id === sectionId)
         : currentPage.sections.find(s => s.type === "input-zone") || currentPage.sections[0]
@@ -201,15 +174,13 @@ const formSlice = createSlice({
           targetSection.elements.push(newElement)
         }
       }
-
-      state.selectedElement = newElement.id
     },
 
-    updateElement: (state, action: PayloadAction<{ id: string; updates: Partial<FormElement> }>) => {
-      const { id, updates } = action.payload
-      const currentPage = state.formData.pages[state.currentPageIndex]
+    updateElement: (state, action: PayloadAction<{ id: string; pageIndex: number; updates: Partial<FormElement> }>) => {
+      const { id, pageIndex, updates } = action.payload
+      const currentPage = state.formData.pages[pageIndex]
+      if (!currentPage) return
       
-      // Find element in any section
       for (const section of currentPage.sections) {
         const elementIndex = section.elements.findIndex((el) => el.id === id)
         if (elementIndex !== -1) {
@@ -219,51 +190,21 @@ const formSlice = createSlice({
       }
     },
 
-    deleteElement: (state, action: PayloadAction<string>) => {
-      const elementId = action.payload
-      const currentPage = state.formData.pages[state.currentPageIndex]
+    deleteElement: (state, action: PayloadAction<{ id: string; pageIndex: number }>) => {
+      const { id, pageIndex } = action.payload
+      const currentPage = state.formData.pages[pageIndex]
+      if (!currentPage) return
       
-      // Remove element from any section
       for (const section of currentPage.sections) {
-        section.elements = section.elements.filter((el) => el.id !== elementId)
-      }
-
-      if (state.selectedElement === elementId) {
-        state.selectedElement = null
+        section.elements = section.elements.filter((el) => el.id !== id)
       }
     },
 
-    removeElement: (state, action: PayloadAction<string>) => {
-      const elementId = action.payload
-      const currentPage = state.formData.pages[state.currentPageIndex]
-      
-      // Remove element from any section
-      for (const section of currentPage.sections) {
-        section.elements = section.elements.filter((el) => el.id !== elementId)
-      }
+    reorderElements: (state, action: PayloadAction<{ dragIndex: number; hoverIndex: number; pageIndex: number; sectionId?: string }>) => {
+      const { dragIndex, hoverIndex, pageIndex, sectionId } = action.payload
+      const currentPage = state.formData.pages[pageIndex]
+      if (!currentPage) return
 
-      if (state.selectedElement === elementId) {
-        state.selectedElement = null
-      }
-    },
-
-    reorderElements: (state, action: PayloadAction<{ dragIndex: number; hoverIndex: number; sectionId?: string }>) => {
-      const { dragIndex, hoverIndex, sectionId } = action.payload
-      const currentPage = state.formData.pages[state.currentPageIndex]
-      const targetSection = sectionId 
-        ? currentPage.sections.find(s => s.id === sectionId)
-        : currentPage.sections.find(s => s.type === "input-zone") || currentPage.sections[0]
-      
-      if (targetSection) {
-        const draggedElement = targetSection.elements[dragIndex]
-        targetSection.elements.splice(dragIndex, 1)
-        targetSection.elements.splice(hoverIndex, 0, draggedElement)
-      }
-    },
-
-    moveElement: (state, action: PayloadAction<{ dragIndex: number; hoverIndex: number; sectionId?: string }>) => {
-      const { dragIndex, hoverIndex, sectionId } = action.payload
-      const currentPage = state.formData.pages[state.currentPageIndex]
       const targetSection = sectionId 
         ? currentPage.sections.find(s => s.id === sectionId)
         : currentPage.sections.find(s => s.type === "input-zone") || currentPage.sections[0]
@@ -322,14 +263,53 @@ const formSlice = createSlice({
         ],
       }
       state.formData.pages.push(newPage)
-      state.currentPageIndex = state.formData.pages.length - 1
-      state.selectedElement = null
+    },
+
+    updatePage: (state, action: PayloadAction<{ pageIndex: number; updates: Partial<FormPage> }>) => {
+      const { pageIndex, updates } = action.payload
+      if (pageIndex >= 0 && pageIndex < state.formData.pages.length) {
+        state.formData.pages[pageIndex] = { ...state.formData.pages[pageIndex], ...updates }
+      }
+    },
+
+    deletePage: (state, action: PayloadAction<number>) => {
+      const pageIndex = action.payload
+      if (state.formData.pages.length <= 1) return
+      state.formData.pages.splice(pageIndex, 1)
+    },
+
+    reorderPages: (state, action: PayloadAction<{ dragIndex: number; hoverIndex: number }>) => {
+      const { dragIndex, hoverIndex } = action.payload
+      const pages = state.formData.pages
+      const draggedPage = pages[dragIndex]
+      pages.splice(dragIndex, 1)
+      pages.splice(hoverIndex, 0, draggedPage)
+    },
+
+    movePageUp: (state, action: PayloadAction<number>) => {
+      const pageIndex = action.payload
+      if (pageIndex === 0) return
+      const pages = state.formData.pages
+      const temp = pages[pageIndex]
+      pages[pageIndex] = pages[pageIndex - 1]
+      pages[pageIndex - 1] = temp
+    },
+
+    movePageDown: (state, action: PayloadAction<number>) => {
+      const pageIndex = action.payload
+      if (pageIndex === state.formData.pages.length - 1) return
+      const pages = state.formData.pages
+      const temp = pages[pageIndex]
+      pages[pageIndex] = pages[pageIndex + 1]
+      pages[pageIndex + 1] = temp
     },
 
     // Section actions
-    addSection: (state, action: PayloadAction<{ type: "container" | "input-zone" }>) => {
-      const { type } = action.payload
-      const currentPage = state.formData.pages[state.currentPageIndex]
+    addSection: (state, action: PayloadAction<{ pageIndex: number; type: "container" | "input-zone" }>) => {
+      const { pageIndex, type } = action.payload
+      const currentPage = state.formData.pages[pageIndex]
+      if (!currentPage) return
+
       const newSection: FormSection = {
         id: generateId(),
         type,
@@ -359,127 +339,34 @@ const formSlice = createSlice({
       currentPage.sections.push(newSection)
     },
 
-    updateSection: (state, action: PayloadAction<{ sectionId: string; updates: Partial<FormSection> }>) => {
-      const { sectionId, updates } = action.payload
-      const currentPage = state.formData.pages[state.currentPageIndex]
+    updateSection: (state, action: PayloadAction<{ pageIndex: number; sectionId: string; updates: Partial<FormSection> }>) => {
+      const { pageIndex, sectionId, updates } = action.payload
+      const currentPage = state.formData.pages[pageIndex]
+      if (!currentPage) return
       const section = currentPage.sections.find(s => s.id === sectionId)
       if (section) {
         Object.assign(section, updates)
       }
     },
 
-    deleteSection: (state, action: PayloadAction<string>) => {
-      const sectionId = action.payload
-      const currentPage = state.formData.pages[state.currentPageIndex]
+    deleteSection: (state, action: PayloadAction<{ pageIndex: number; sectionId: string }>) => {
+      const { pageIndex, sectionId } = action.payload
+      const currentPage = state.formData.pages[pageIndex]
+      if (!currentPage) return
       currentPage.sections = currentPage.sections.filter(s => s.id !== sectionId)
-      state.selectedElement = null
     },
 
-    moveSection: (state, action: PayloadAction<{ dragIndex: number; hoverIndex: number }>) => {
-      const { dragIndex, hoverIndex } = action.payload
-      const currentPage = state.formData.pages[state.currentPageIndex]
+    moveSection: (state, action: PayloadAction<{ pageIndex: number; dragIndex: number; hoverIndex: number }>) => {
+      const { pageIndex, dragIndex, hoverIndex } = action.payload
+      const currentPage = state.formData.pages[pageIndex]
+      if (!currentPage) return
       const draggedSection = currentPage.sections[dragIndex]
       currentPage.sections.splice(dragIndex, 1)
       currentPage.sections.splice(hoverIndex, 0, draggedSection)
     },
 
-    updatePage: (state, action: PayloadAction<{ pageIndex: number; updates: Partial<FormPage> }>) => {
-      const { pageIndex, updates } = action.payload
-      if (pageIndex >= 0 && pageIndex < state.formData.pages.length) {
-        state.formData.pages[pageIndex] = { ...state.formData.pages[pageIndex], ...updates }
-      }
-    },
-
-    deletePage: (state, action: PayloadAction<number>) => {
-      const pageIndex = action.payload
-      if (state.formData.pages.length <= 1) return
-
-      state.formData.pages.splice(pageIndex, 1)
-
-      if (state.currentPageIndex >= pageIndex && state.currentPageIndex > 0) {
-        state.currentPageIndex = state.currentPageIndex - 1
-      }
-      state.selectedElement = null
-    },
-
-    removePage: (state, action: PayloadAction<number>) => {
-      const pageIndex = action.payload
-      if (state.formData.pages.length <= 1) return
-
-      state.formData.pages.splice(pageIndex, 1)
-
-      if (state.currentPageIndex >= pageIndex && state.currentPageIndex > 0) {
-        state.currentPageIndex = state.currentPageIndex - 1
-      }
-      state.selectedElement = null
-    },
-
-    reorderPages: (state, action: PayloadAction<{ dragIndex: number; hoverIndex: number }>) => {
-      const { dragIndex, hoverIndex } = action.payload
-      const pages = state.formData.pages
-      const draggedPage = pages[dragIndex]
-
-      // Remove the dragged page
-      pages.splice(dragIndex, 1)
-      // Insert it at the new position
-      pages.splice(hoverIndex, 0, draggedPage)
-
-      // Update current page index if necessary
-      if (state.currentPageIndex === dragIndex) {
-        state.currentPageIndex = hoverIndex
-      } else if (dragIndex < state.currentPageIndex && hoverIndex >= state.currentPageIndex) {
-        state.currentPageIndex = state.currentPageIndex - 1
-      } else if (dragIndex > state.currentPageIndex && hoverIndex <= state.currentPageIndex) {
-        state.currentPageIndex = state.currentPageIndex + 1
-      }
-    },
-
-    setActivePage: (state, action: PayloadAction<number>) => {
-      const pageIndex = action.payload
-      if (pageIndex >= 0 && pageIndex < state.formData.pages.length) {
-        state.currentPageIndex = pageIndex
-        state.selectedElement = null
-      }
-    },
-
-    movePageUp: (state, action: PayloadAction<number>) => {
-      const pageIndex = action.payload
-      if (pageIndex === 0) return
-
-      const pages = state.formData.pages
-      const temp = pages[pageIndex]
-      pages[pageIndex] = pages[pageIndex - 1]
-      pages[pageIndex - 1] = temp
-
-      if (state.currentPageIndex === pageIndex) {
-        state.currentPageIndex = pageIndex - 1
-      } else if (state.currentPageIndex === pageIndex - 1) {
-        state.currentPageIndex = pageIndex
-      }
-    },
-
-    movePageDown: (state, action: PayloadAction<number>) => {
-      const pageIndex = action.payload
-      if (pageIndex === state.formData.pages.length - 1) return
-
-      const pages = state.formData.pages
-      const temp = pages[pageIndex]
-      pages[pageIndex] = pages[pageIndex + 1]
-      pages[pageIndex + 1] = temp
-
-      if (state.currentPageIndex === pageIndex) {
-        state.currentPageIndex = pageIndex + 1
-      } else if (state.currentPageIndex === pageIndex + 1) {
-        state.currentPageIndex = pageIndex
-      }
-    },
-
     updateFormSettings: (state, action: PayloadAction<Partial<FormData["settings"]>>) => {
       state.formData.settings = { ...state.formData.settings, ...action.payload }
-    },
-
-    updateTheme: (state, action: PayloadAction<{ theme: string }>) => {
-      state.formData.settings.theme = action.payload.theme
     },
 
     setFormTitle: (state, action: PayloadAction<string>) => {
@@ -489,20 +376,10 @@ const formSlice = createSlice({
     setFormDescription: (state, action: PayloadAction<string>) => {
       state.formData.description = action.payload
     },
-
-    publishForm: (state) => {
-      state.isPublished = true
-      state.shareableLink = `${window.location.origin}/form/${state.formData.id}`
-    },
-
-    unpublishForm: (state) => {
-      state.isPublished = false
-      state.shareableLink = null
-    },
   },
 })
 
-// Helper functions
+// Helper functions (kept outside the slice for reuse if needed)
 function getDefaultLabel(type: string, isWelcomePage = false): string {
   if (isWelcomePage) {
     const welcomeLabels: Record<string, string> = {
@@ -544,34 +421,23 @@ function getDefaultPlaceholder(type: string): string {
 
 export const {
   setFormData,
-  setCurrentPageIndex,
-  setSelectedElement,
-  setSettingsSidebarOpen,
-  setActiveTab,
   addElement,
   updateElement,
   deleteElement,
-  removeElement,
-  moveElement,
   reorderElements,
   addPage,
   updatePage,
   deletePage,
-  removePage,
+  reorderPages,
   movePageUp,
   movePageDown,
-  reorderPages,
-  setActivePage,
   updateFormSettings,
-  updateTheme,
   setFormTitle,
   setFormDescription,
   addSection,
   updateSection,
   deleteSection,
   moveSection,
-  publishForm,
-  unpublishForm,
 } = formSlice.actions
 
 export default formSlice.reducer

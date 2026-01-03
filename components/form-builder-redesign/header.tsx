@@ -22,9 +22,8 @@ import {
     MoreHorizontal,
 } from "lucide-react"
 import { useAppSelector, useAppDispatch } from "@/store/hooks"
-import { publishForm, unpublishForm } from "@/store/slices/formSlice"
+import { setPublished, unpublish } from "@/store/slices/publishSlice"
 import { toast } from "@/components/ui/use-toast"
-import Image from "next/image"
 import Link from "next/link"
 
 interface ModernHeaderProps {
@@ -37,7 +36,7 @@ interface ModernHeaderProps {
 
 export function ModernHeader({ formData, onUpdateForm, onPreview, activeTab, onTabChange }: ModernHeaderProps) {
     const dispatch = useAppDispatch()
-    const { isPublished, shareableLink } = useAppSelector((state) => state.form)
+    const { isPublished, shareableLink } = useAppSelector((state) => state.publish)
     const [isEditing, setIsEditing] = useState(false)
     const [tempTitle, setTempTitle] = useState(formData.title)
     const [copied, setCopied] = useState(false)
@@ -48,7 +47,8 @@ export function ModernHeader({ formData, onUpdateForm, onPreview, activeTab, onT
     }
 
     const handlePublish = () => {
-        dispatch(publishForm())
+        const link = `${window.location.origin}/form/${formData.id}`
+        dispatch(setPublished({ isPublished: true, shareableLink: link }))
         toast({
             title: "Form Published!",
             description: "Your form is now live and can be shared with others.",
@@ -56,7 +56,7 @@ export function ModernHeader({ formData, onUpdateForm, onPreview, activeTab, onT
     }
 
     const handleUnpublish = () => {
-        dispatch(unpublishForm())
+        dispatch(unpublish())
         toast({
             title: "Form Unpublished",
             description: "Your form is no longer publicly accessible.",
@@ -121,8 +121,8 @@ export function ModernHeader({ formData, onUpdateForm, onPreview, activeTab, onT
 
                 {/* Status Badge */}
                 <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${isPublished
-                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-                        : "bg-slate-100 text-slate-600"
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                    : "bg-slate-100 text-slate-600"
                     }`}>
                     {isPublished ? (
                         <><Globe className="h-3 w-3" /> Live</>
@@ -140,8 +140,8 @@ export function ModernHeader({ formData, onUpdateForm, onPreview, activeTab, onT
                             key={tab.id}
                             onClick={() => onTabChange(tab.id)}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === tab.id
-                                    ? "bg-white text-slate-900 shadow-sm"
-                                    : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                                ? "bg-white text-slate-900 shadow-sm"
+                                : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
                                 }`}
                         >
                             <tab.icon className="h-3.5 w-3.5" />
@@ -192,8 +192,8 @@ export function ModernHeader({ formData, onUpdateForm, onPreview, activeTab, onT
                     size="sm"
                     onClick={isPublished ? handleUnpublish : handlePublish}
                     className={`h-8 gap-1.5 ${isPublished
-                            ? "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
-                            : "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-sm"
+                        ? "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
+                        : "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-sm"
                         }`}
                 >
                     <Share2 className="h-3.5 w-3.5" />
