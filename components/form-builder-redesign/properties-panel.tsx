@@ -158,7 +158,7 @@ export function PropertiesPanel({
                 </button>
             )}
 
-            <div className={`bg-white border-l border-slate-200 flex-shrink-0 flex flex-col transition-all duration-200 ${isOpen ? "w-80" : "w-0 overflow-hidden"}`}>
+            <div className={`bg-white border-l border-slate-200 flex-shrink-0 flex flex-col transition-all duration-200 ${isOpen ? "w-72" : "w-0 overflow-hidden"}`}>
                 {/* Header */}
                 <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100">
                     <div className="flex items-center gap-1.5">
@@ -179,7 +179,7 @@ export function PropertiesPanel({
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                <div className="flex-1 overflow-y-auto p-3 space-y-4 custom-scrollbar">
 
                     {/* ========== CONTENT TAB ========== */}
                     {activeSection === "content" && (
@@ -218,55 +218,55 @@ export function PropertiesPanel({
 
                             {/* ELEMENT CONTENT */}
                             {selectedElement && formElement && !isBackgroundSelected && !isButtonsSelected && (
-                                <div className="space-y-5">
-                                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
-                                        <Type className="h-4 w-4 text-slate-500" />
-                                        <span className="text-xs font-medium text-slate-700 capitalize">{formElement.type}</span>
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 p-1.5 bg-slate-50 rounded-md border border-slate-100">
+                                        <Type className="h-3.5 w-3.5 text-slate-500" />
+                                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{formElement.type}</span>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-medium text-slate-700">{formElement.type === "heading" ? "Heading Text" : formElement.type === "paragraph" ? "Text Content" : "Question Text"}</Label>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">{formElement.type === "heading" ? "Heading Text" : formElement.type === "paragraph" ? "Text Content" : "Question Text"}</Label>
                                         <Textarea value={formElement.label} onChange={(e) => onUpdateElement(formElement.id, { label: e.target.value })}
-                                            className="min-h-[80px] text-sm resize-none border-slate-200 focus:border-violet-500 transition-colors" placeholder="Enter text..." />
+                                            className="min-h-[60px] text-xs resize-none border-slate-200 focus:border-violet-500 transition-colors p-2" placeholder="Enter text..." />
                                     </div>
 
                                     {!["heading", "paragraph", "image"].includes(formElement.type) && (
-                                        <div className="space-y-2">
-                                            <Label className="text-xs font-medium text-slate-700">Help Text / Placeholder</Label>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Help Text / Placeholder</Label>
                                             <Input value={formElement.placeholder || ""} onChange={(e) => onUpdateElement(formElement.id, { placeholder: e.target.value })}
-                                                className="h-9 text-xs border-slate-200 focus:border-violet-500" placeholder="Type clarification text..." />
+                                                className="h-7 text-xs border-slate-200 focus:border-violet-500" placeholder="Type clarification text..." />
                                         </div>
                                     )}
 
                                     {!["heading", "paragraph", "image", "start-button", "submit-button"].includes(formElement.type) && (
-                                        <div className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-lg shadow-sm">
+                                        <div className="flex items-center justify-between p-2 bg-white border border-slate-100 rounded-md shadow-sm">
                                             <div>
-                                                <Label className="text-xs font-medium text-slate-700">Required Field</Label>
-                                                <p className="text-[10px] text-slate-400">User cannot skip this</p>
+                                                <Label className="text-[10px] font-medium text-slate-700">Required Field</Label>
+                                                <p className="text-[9px] text-slate-400">User cannot skip this</p>
                                             </div>
-                                            <Switch checked={formElement.required} onCheckedChange={(c) => onUpdateElement(formElement.id, { required: c })} />
+                                            <Switch className="scale-75 origin-right" checked={formElement.required} onCheckedChange={(c) => onUpdateElement(formElement.id, { required: c })} />
                                         </div>
                                     )}
 
                                     {/* Choices Management */}
                                     {["select", "radio", "checkbox"].includes(formElement.type) && (
-                                        <div className="space-y-3 pt-2 border-t border-slate-100">
+                                        <div className="space-y-2 pt-2 border-t border-slate-100">
                                             <div className="flex items-center justify-between">
-                                                <Label className="text-xs font-medium text-slate-700">Choices</Label>
-                                                <span className="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded-full">{formElement.options?.length || 0}</span>
+                                                <Label className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Choices</Label>
+                                                <span className="bg-slate-100 text-slate-500 text-[9px] px-1.5 py-0.5 rounded-full">{formElement.options?.length || 0}</span>
                                             </div>
-                                            <div className="space-y-2">
+                                            <div className="space-y-1.5">
                                                 {formElement.options?.map((opt, i) => (
-                                                    <div key={i} className="flex items-center gap-2 group">
-                                                        <GripVertical className="h-4 w-4 text-slate-300 opacity-0 group-hover:opacity-100 cursor-grab" />
-                                                        <Input value={opt} onChange={(e) => updateOption(i, e.target.value)} className="h-8 text-xs flex-1 border-slate-200" />
+                                                    <div key={i} className="flex items-center gap-1 group">
+                                                        <GripVertical className="h-3 w-3 text-slate-300 opacity-0 group-hover:opacity-100 cursor-grab" />
+                                                        <Input value={opt} onChange={(e) => updateOption(i, e.target.value)} className="h-7 text-xs flex-1 border-slate-200" />
                                                         <button onClick={() => removeOption(i)} className="p-1 rounded text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all" disabled={(formElement.options?.length || 0) <= 1}>
-                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                            <Trash2 className="h-3 w-3" />
                                                         </button>
                                                     </div>
                                                 ))}
-                                                <Button onClick={addOption} variant="outline" size="sm" className="w-full h-8 text-xs border-dashed text-slate-500 hover:text-violet-600 hover:border-violet-300 hover:bg-violet-50">
-                                                    <Plus className="h-3 w-3 mr-1.5" /> Add Choice
+                                                <Button onClick={addOption} variant="outline" size="sm" className="w-full h-7 text-[10px] border-dashed text-slate-500 hover:text-violet-600 hover:border-violet-300 hover:bg-violet-50">
+                                                    <Plus className="h-3 w-3 mr-1" /> Add Choice
                                                 </Button>
                                             </div>
                                         </div>
@@ -274,13 +274,13 @@ export function PropertiesPanel({
 
                                     {/* Image Position Controls */}
                                     {formElement.type === "image" && (
-                                        <div className="space-y-2">
-                                            <Label className="text-xs font-medium text-slate-700">Alignment</Label>
-                                            <div className="flex bg-slate-100 p-1 rounded-lg">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Alignment</Label>
+                                            <div className="flex bg-slate-100 p-0.5 rounded-md">
                                                 {[{ v: 'left', i: AlignLeft }, { v: 'center', i: AlignCenter }, { v: 'right', i: AlignRight }].map(({ v, i: Icon }) => (
                                                     <button key={v} onClick={() => onUpdateElement(formElement.id, { imagePosition: v as any })}
-                                                        className={`flex-1 py-1.5 flex justify-center rounded-md transition-all ${formElement.imagePosition === v ? 'bg-white shadow text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}>
-                                                        <Icon className="h-4 w-4" />
+                                                        className={`flex-1 py-1 flex justify-center rounded transition-all ${formElement.imagePosition === v ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}>
+                                                        <Icon className="h-3.5 w-3.5" />
                                                     </button>
                                                 ))}
                                             </div>
@@ -291,32 +291,32 @@ export function PropertiesPanel({
 
                             {/* SECTION CONTENT */}
                             {formSection && !isBackgroundSelected && !isButtonsSelected && (
-                                <div className="space-y-5">
-                                    <div className="flex items-center gap-2 p-2 bg-emerald-50 rounded-lg border border-emerald-100">
-                                        <Layout className="h-4 w-4 text-emerald-600" />
-                                        <span className="text-xs font-medium text-emerald-700">{formSection.type === 'input-zone' ? 'Input Section' : 'Container'} Properties</span>
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 p-1.5 bg-emerald-50 rounded-md border border-emerald-100">
+                                        <Layout className="h-3.5 w-3.5 text-emerald-600" />
+                                        <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">{formSection.type === 'input-zone' ? 'Input Zone' : 'Container'}</span>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-medium text-slate-700">Section Title</Label>
-                                        <Input value={formSection.title || ""} onChange={(e) => onUpdateSection(formSection.id, { title: e.target.value })} className="h-9 text-xs border-slate-200" placeholder="Optional title..." />
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Section Title</Label>
+                                        <Input value={formSection.title || ""} onChange={(e) => onUpdateSection(formSection.id, { title: e.target.value })} className="h-7 text-xs border-slate-200" placeholder="Optional title..." />
                                     </div>
 
-                                    <div className="space-y-4 pt-3 border-t border-slate-100">
+                                    <div className="space-y-3 pt-2 border-t border-slate-100">
                                         <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Layout</Label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div className="space-y-1.5">
-                                                <Label className="text-[10px] text-slate-500">Direction</Label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div className="space-y-1">
+                                                <Label className="text-[9px] text-slate-500">Direction</Label>
                                                 <Select value={formSection.layout.direction} onValueChange={(val: any) => updateSectionLayout({ direction: val })}>
-                                                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                                                    <SelectTrigger className="h-7 text-[10px]"><SelectValue /></SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="column">Column (Stack)</SelectItem>
-                                                        <SelectItem value="row">Row (Side-by-side)</SelectItem>
+                                                        <SelectItem value="column">Stack (Column)</SelectItem>
+                                                        <SelectItem value="row">Side (Row)</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
-                                            <div className="space-y-1.5">
-                                                <Label className="text-[10px] text-slate-500">Gap (px)</Label>
-                                                <Input type="number" value={formSection.layout.gap} onChange={(e) => updateSectionLayout({ gap: parseInt(e.target.value) })} className="h-8 text-xs" />
+                                            <div className="space-y-1">
+                                                <Label className="text-[9px] text-slate-500">Gap (px)</Label>
+                                                <Input type="number" value={formSection.layout.gap} onChange={(e) => updateSectionLayout({ gap: parseInt(e.target.value) })} className="h-7 text-xs" />
                                             </div>
                                         </div>
                                     </div>
@@ -325,19 +325,19 @@ export function PropertiesPanel({
 
                             {/* PAGE CONTENT (Form Card) */}
                             {selectionContext === 'formcard' && (
-                                <div className="space-y-5">
-                                    <div className="flex items-center gap-2 p-2 bg-emerald-50 rounded-lg border border-emerald-100">
-                                        <LayoutTemplate className="h-4 w-4 text-emerald-600" />
-                                        <span className="text-xs font-medium text-emerald-700">Page Properties</span>
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 p-1.5 bg-emerald-50 rounded-md border border-emerald-100">
+                                        <LayoutTemplate className="h-3.5 w-3.5 text-emerald-600" />
+                                        <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">Page Settings</span>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-medium text-slate-700">Page Title</Label>
-                                        <Input value={currentPage.title} onChange={(e) => onUpdatePage({ title: e.target.value })} className="h-9 text-xs border-slate-200" />
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Page Title</Label>
+                                        <Input value={currentPage.title} onChange={(e) => onUpdatePage({ title: e.target.value })} className="h-7 text-xs border-slate-200" />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-medium text-slate-700">Page Type</Label>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Page Type</Label>
                                         <Select value={currentPage.type} onValueChange={(v: "welcome" | "form" | "ending") => onUpdatePage({ type: v })}>
-                                            <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                                            <SelectTrigger className="h-7 text-[10px]"><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="welcome">Welcome Screen</SelectItem>
                                                 <SelectItem value="form">Form Page</SelectItem>
@@ -355,15 +355,15 @@ export function PropertiesPanel({
                         <>
                             {/* BACKGROUND STYLING (My Rich Feature) */}
                             {selectionContext === 'background' && (
-                                <div className="space-y-5">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Label className="text-xs font-bold uppercase tracking-widest text-pink-500">Global Background</Label>
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-pink-500">Global Background</Label>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label className="text-xs text-slate-600">Background Type</Label>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] text-slate-500 uppercase tracking-wide">Background Type</Label>
                                         <Select value={currentPage.layout.backgroundType || 'color'} onValueChange={(v: any) => onUpdatePage({ layout: { ...currentPage.layout, backgroundType: v } })}>
-                                            <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                                            <SelectTrigger className="h-7 text-[10px]"><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="color">Solid Color</SelectItem>
                                                 <SelectItem value="gradient">Gradient</SelectItem>
@@ -375,59 +375,59 @@ export function PropertiesPanel({
                                     </div>
 
                                     {(!currentPage.layout.backgroundType || currentPage.layout.backgroundType === 'color' || currentPage.layout.backgroundType === 'dots') && (
-                                        <div className="space-y-3">
-                                            <Label className="text-xs text-slate-600">Preset Colors</Label>
-                                            <div className="grid grid-cols-6 gap-2">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] text-slate-500 uppercase tracking-wide">Preset Colors</Label>
+                                            <div className="grid grid-cols-8 gap-1.5">
                                                 {colorPresets.map((color, i) => (
                                                     <button key={i} onClick={() => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: color } })}
-                                                        className={`w-full aspect-square rounded-full border transition-all hover:scale-110 ${currentPage.layout.canvasBackground === color ? 'border-pink-500 ring-2 ring-pink-200 scale-110' : 'border-slate-200'}`}
+                                                        className={`w-full aspect-square rounded border transition-all hover:scale-110 ${currentPage.layout.canvasBackground === color ? 'border-pink-500 ring-1 ring-pink-200 scale-110' : 'border-slate-200'}`}
                                                         style={{ backgroundColor: color }} />
                                                 ))}
                                             </div>
-                                            <div className="flex gap-2 items-center pt-2">
-                                                <Label className="text-[10px] text-slate-500 w-16">Custom:</Label>
-                                                <div className="flex gap-2 flex-1">
+                                            <div className="flex gap-2 items-center pt-1">
+                                                <Label className="text-[9px] text-slate-400 w-12">Custom:</Label>
+                                                <div className="flex gap-1.5 flex-1 items-center">
                                                     <input type="color" value={currentPage.layout.canvasBackground} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: e.target.value } })}
-                                                        className="w-8 h-8 rounded border border-slate-200 cursor-pointer" />
+                                                        className="w-5 h-5 rounded border border-slate-200 cursor-pointer p-0" />
                                                     <Input value={currentPage.layout.canvasBackground} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: e.target.value } })}
-                                                        className="h-8 text-xs font-mono flex-1" />
+                                                        className="h-6 text-[10px] font-mono flex-1 px-1" />
                                                 </div>
                                             </div>
                                         </div>
                                     )}
 
                                     {currentPage.layout.backgroundType === 'gradient' && (
-                                        <div className="space-y-3">
-                                            <Label className="text-xs text-slate-600">Gradient Presets</Label>
-                                            <div className="grid grid-cols-2 gap-2">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] text-slate-500 uppercase tracking-wide">Gradient Presets</Label>
+                                            <div className="grid grid-cols-2 gap-1.5">
                                                 {gradientPresets.map((preset, i) => (
                                                     <button key={i} onClick={() => applyGradientPreset(preset)}
-                                                        className="w-full h-10 rounded-md border border-slate-200 hover:border-pink-500 transition-all text-[9px] font-medium text-white shadow-sm flex items-center justify-center"
+                                                        className="w-full h-8 rounded border border-slate-200 hover:border-pink-500 transition-all text-[9px] font-medium text-white shadow-sm flex items-center justify-center opacity-90 hover:opacity-100"
                                                         style={{ background: `linear-gradient(${preset.angle}deg, ${preset.colors.join(', ')})` }}>
                                                         {preset.name}
                                                     </button>
                                                 ))}
                                             </div>
-                                            <div className="space-y-2 pt-2">
-                                                <Label className="text-xs text-slate-500">Angle ({currentPage.layout.canvasGradient?.angle || 135}°)</Label>
-                                                <Slider value={[currentPage.layout.canvasGradient?.angle || 135]} min={0} max={360} step={15}
+                                            <div className="space-y-1 pt-1">
+                                                <Label className="text-[9px] text-slate-400">Angle ({currentPage.layout.canvasGradient?.angle || 135}°)</Label>
+                                                <Slider className="scale-90 origin-left w-[110%]" value={[currentPage.layout.canvasGradient?.angle || 135]} min={0} max={360} step={15}
                                                     onValueChange={([v]) => onUpdatePage({ layout: { ...currentPage.layout, canvasGradient: { ...(currentPage.layout.canvasGradient || { enabled: true, type: 'linear', colors: ['#ff7e5f', '#feb47b'] }), angle: v } } })} />
                                             </div>
                                         </div>
                                     )}
 
                                     {currentPage.layout.backgroundType === 'mesh' && (
-                                        <div className="space-y-3">
-                                            <Label className="text-xs text-slate-600">Mesh Gradients</Label>
-                                            <div className="grid grid-cols-2 gap-2">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] text-slate-500 uppercase tracking-wide">Mesh Gradients</Label>
+                                            <div className="grid grid-cols-2 gap-1.5">
                                                 {meshPresets.map((preset, i) => (
                                                     <button key={i} onClick={() => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: preset.baseColor } })}
-                                                        className="w-full h-12 rounded-lg border border-slate-200 hover:border-pink-500 transition-all text-[9px] font-medium text-slate-700 flex items-center justify-center relative overflow-hidden"
+                                                        className="w-full h-8 rounded border border-slate-200 hover:border-pink-500 transition-all text-[9px] font-medium text-slate-700 flex items-center justify-center relative overflow-hidden"
                                                     >
                                                         <div className="absolute inset-0 opacity-50" style={{
                                                             background: `linear-gradient(135deg, ${preset.baseColor} 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(200,200,255,0.5) 0%, transparent 50%)`
                                                         }} />
-                                                        <span className="relative z-10 bg-white/60 px-2 py-0.5 rounded-full">{preset.name}</span>
+                                                        <span className="relative z-10 bg-white/60 px-1.5 py-0.5 rounded-full text-[8px]">{preset.name}</span>
                                                     </button>
                                                 ))}
                                             </div>
@@ -435,12 +435,12 @@ export function PropertiesPanel({
                                     )}
 
                                     {currentPage.layout.backgroundType === 'image' && (
-                                        <div className="space-y-3">
-                                            <Label className="text-xs text-slate-600">Background Image</Label>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] text-slate-500 uppercase tracking-wide">Background Image</Label>
                                             <Input value={currentPage.layout.backgroundImage || ''} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, backgroundImage: e.target.value } })}
-                                                className="h-9 text-xs" placeholder="https://example.com/image.jpg" />
+                                                className="h-7 text-[10px]" placeholder="https://example.com/image.jpg" />
                                             {currentPage.layout.backgroundImage && (
-                                                <div className="aspect-video w-full rounded-lg border border-slate-200 overflow-hidden bg-slate-50 relative">
+                                                <div className="aspect-video w-full rounded border border-slate-200 overflow-hidden bg-slate-50 relative">
                                                     <img src={currentPage.layout.backgroundImage} alt="Preview" className="w-full h-full object-cover" />
                                                 </div>
                                             )}
@@ -451,45 +451,51 @@ export function PropertiesPanel({
 
                             {/* BUTTON STYLING */}
                             {selectionContext === 'buttons' && (
-                                <div className="space-y-5">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Label className="text-xs font-bold uppercase tracking-widest text-violet-500">Button Appearance</Label>
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-violet-500">Button Appearance</Label>
                                     </div>
-                                    <div className="space-y-3">
-                                        <Label className="text-xs text-slate-600">Style Presets</Label>
-                                        <div className="grid grid-cols-3 gap-2">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] text-slate-500 uppercase tracking-wide">Style Presets</Label>
+                                        <div className="grid grid-cols-3 gap-1.5">
                                             {buttonPresets.map(p => (
                                                 <button key={p.id} onClick={() => applyPreset(p)}
-                                                    className={`p-2 rounded-lg border text-[10px] font-medium transition-all flex flex-col items-center gap-1.5 ${buttonStyle.preset === p.id ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-slate-200 hover:border-slate-300'}`}>
-                                                    <div className="w-full h-3 rounded-full opacity-60" style={{ backgroundColor: p.style.backgroundColor || '#0f172a' }} />
+                                                    className={`p-1.5 rounded border text-[9px] font-medium transition-all flex flex-col items-center gap-1 ${buttonStyle.preset === p.id ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-slate-200 hover:border-slate-300'}`}>
+                                                    <div className="w-full h-2 rounded opacity-60" style={{ backgroundColor: p.style.backgroundColor || '#0f172a' }} />
                                                     {p.name}
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 pt-4 border-t border-slate-100">
-                                        <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Customization</Label>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] text-slate-500">Padding</Label>
-                                                <Slider value={[buttonStyle.paddingX]} min={8} max={60} step={2} onValueChange={([v]) => updateButtonStyle({ paddingX: v })} />
+                                    <div className="space-y-3 pt-3 border-t border-slate-100">
+                                        <Label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Customization</Label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1">
+                                                <Label className="text-[9px] text-slate-400">Padding</Label>
+                                                <Slider className="scale-90 origin-left w-[110%]" value={[buttonStyle.paddingX]} min={8} max={60} step={2} onValueChange={([v]) => updateButtonStyle({ paddingX: v })} />
                                             </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] text-slate-500">Radius</Label>
-                                                <Slider value={[buttonStyle.borderRadius]} min={0} max={30} step={1} onValueChange={([v]) => updateButtonStyle({ borderRadius: v })} />
+                                            <div className="space-y-1">
+                                                <Label className="text-[9px] text-slate-400">Radius</Label>
+                                                <Slider className="scale-90 origin-left w-[110%]" value={[buttonStyle.borderRadius]} min={0} max={30} step={1} onValueChange={([v]) => updateButtonStyle({ borderRadius: v })} />
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] text-slate-500">Colors</Label>
-                                            <div className="flex gap-4">
-                                                <div className="space-y-1 flex-1">
-                                                    <span className="text-[9px] text-slate-400 block mb-1">Background</span>
-                                                    <div className="flex gap-2"><input type="color" value={buttonStyle.backgroundColor} onChange={(e) => updateButtonStyle({ backgroundColor: e.target.value })} className="w-8 h-8 rounded border" /><Input value={buttonStyle.backgroundColor} className="h-8 text-[10px]" /></div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[9px] text-slate-400">Colors</Label>
+                                            <div className="flex gap-3">
+                                                <div className="space-y-0.5 flex-1">
+                                                    <span className="text-[8px] text-slate-400 block mb-0.5">Background</span>
+                                                    <div className="flex gap-1.5 items-center">
+                                                        <input type="color" value={buttonStyle.backgroundColor} onChange={(e) => updateButtonStyle({ backgroundColor: e.target.value })} className="w-5 h-5 rounded border p-0 cursor-pointer" />
+                                                        <Input value={buttonStyle.backgroundColor} className="h-6 text-[10px] px-1" />
+                                                    </div>
                                                 </div>
-                                                <div className="space-y-1 flex-1">
-                                                    <span className="text-[9px] text-slate-400 block mb-1">Text</span>
-                                                    <div className="flex gap-2"><input type="color" value={buttonStyle.textColor} onChange={(e) => updateButtonStyle({ textColor: e.target.value })} className="w-8 h-8 rounded border" /><Input value={buttonStyle.textColor} className="h-8 text-[10px]" /></div>
+                                                <div className="space-y-0.5 flex-1">
+                                                    <span className="text-[8px] text-slate-400 block mb-0.5">Text</span>
+                                                    <div className="flex gap-1.5 items-center">
+                                                        <input type="color" value={buttonStyle.textColor} onChange={(e) => updateButtonStyle({ textColor: e.target.value })} className="w-5 h-5 rounded border p-0 cursor-pointer" />
+                                                        <Input value={buttonStyle.textColor} className="h-6 text-[10px] px-1" />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -499,45 +505,45 @@ export function PropertiesPanel({
 
                             {/* SECTION STYLING (User's rich features) */}
                             {selectionContext === 'section' && formSection && (
-                                <div className="space-y-6">
-                                    <div className="space-y-4">
-                                        <Label className="text-xs font-bold uppercase tracking-widest text-emerald-500">Visuals</Label>
+                                <div className="space-y-4">
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">Visuals</Label>
 
-                                        <div className="space-y-2">
-                                            <Label className="text-xs text-slate-600">Background Color</Label>
-                                            <div className="flex gap-2">
-                                                <input type="color" value={formSection.layout.backgroundColor} onChange={(e) => updateSectionLayout({ backgroundColor: e.target.value })} className="w-9 h-9 rounded-lg border border-slate-200" />
-                                                <Input value={formSection.layout.backgroundColor} onChange={(e) => updateSectionLayout({ backgroundColor: e.target.value })} className="flex-1 h-9 text-xs font-mono" />
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] text-slate-500 uppercase tracking-wide">Background Color</Label>
+                                            <div className="flex gap-1.5 items-center">
+                                                <input type="color" value={formSection.layout.backgroundColor} onChange={(e) => updateSectionLayout({ backgroundColor: e.target.value })} className="w-6 h-6 rounded border border-slate-200 p-0 cursor-pointer" />
+                                                <Input value={formSection.layout.backgroundColor} onChange={(e) => updateSectionLayout({ backgroundColor: e.target.value })} className="flex-1 h-7 text-[10px] font-mono" />
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2"><Label className="text-xs text-slate-500">Radius ({formSection.layout.borderRadius}px)</Label><Slider value={[formSection.layout.borderRadius]} min={0} max={32} step={1} onValueChange={([v]) => updateSectionLayout({ borderRadius: v })} /></div>
-                                            <div className="space-y-2"><Label className="text-xs text-slate-500">Border ({formSection.layout.borderWidth}px)</Label><Slider value={[formSection.layout.borderWidth]} min={0} max={8} step={1} onValueChange={([v]) => updateSectionLayout({ borderWidth: v })} /></div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1"><Label className="text-[9px] text-slate-500">Radius ({formSection.layout.borderRadius}px)</Label><Slider className="scale-90 origin-left w-[110%]" value={[formSection.layout.borderRadius]} min={0} max={32} step={1} onValueChange={([v]) => updateSectionLayout({ borderRadius: v })} /></div>
+                                            <div className="space-y-1"><Label className="text-[9px] text-slate-500">Border ({formSection.layout.borderWidth}px)</Label><Slider className="scale-90 origin-left w-[110%]" value={[formSection.layout.borderWidth]} min={0} max={8} step={1} onValueChange={([v]) => updateSectionLayout({ borderWidth: v })} /></div>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 pt-4 border-t border-slate-100">
-                                        <Label className="text-xs font-bold uppercase tracking-widest text-slate-400">Padding</Label>
-                                        <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-3 pt-3 border-t border-slate-100">
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Padding</Label>
+                                        <div className="grid grid-cols-2 gap-2">
                                             {(['top', 'bottom', 'left', 'right'] as const).map(side => (
-                                                <div key={side} className="space-y-1">
-                                                    <Label className="text-[10px] text-slate-500 capitalize">{side}</Label>
-                                                    <Input type="number" value={formSection.layout.padding[side]} onChange={(e) => updateSectionLayout({ padding: { ...formSection.layout.padding, [side]: parseInt(e.target.value) } })} className="h-8 text-xs" />
+                                                <div key={side} className="space-y-0.5">
+                                                    <Label className="text-[9px] text-slate-400 capitalize">{side}</Label>
+                                                    <Input type="number" value={formSection.layout.padding[side]} onChange={(e) => updateSectionLayout({ padding: { ...formSection.layout.padding, [side]: parseInt(e.target.value) } })} className="h-6 text-[10px]" />
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
 
-                                    <div className="space-y-3 pt-4 border-t border-slate-100">
-                                        <Label className="text-xs font-bold uppercase tracking-widest text-slate-400">Effects</Label>
+                                    <div className="space-y-2 pt-3 border-t border-slate-100">
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Effects</Label>
                                         <div className="flex items-center justify-between">
-                                            <Label className="text-xs text-slate-600">Drop Shadow</Label>
-                                            <Switch checked={formSection.layout.shadow?.enabled} onCheckedChange={(val) => updateSectionLayout({ shadow: { ...(formSection.layout.shadow || { x: 0, y: 4, blur: 20, spread: 0, color: "rgba(0,0,0,0.1)" }), enabled: val } })} />
+                                            <Label className="text-[10px] text-slate-600">Drop Shadow</Label>
+                                            <Switch className="scale-75 origin-right" checked={formSection.layout.shadow?.enabled} onCheckedChange={(val) => updateSectionLayout({ shadow: { ...(formSection.layout.shadow || { x: 0, y: 4, blur: 20, spread: 0, color: "rgba(0,0,0,0.1)" }), enabled: val } })} />
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <Label className="text-xs text-slate-600">Glassmorphism</Label>
-                                            <Switch checked={formSection.layout.glassmorphism?.enabled} onCheckedChange={(val) => updateSectionLayout({ glassmorphism: { ...(formSection.layout.glassmorphism || { blur: 10, opacity: 0.8 }), enabled: val } })} />
+                                            <Label className="text-[10px] text-slate-600">Glassmorphism</Label>
+                                            <Switch className="scale-75 origin-right" checked={formSection.layout.glassmorphism?.enabled} onCheckedChange={(val) => updateSectionLayout({ glassmorphism: { ...(formSection.layout.glassmorphism || { blur: 10, opacity: 0.8 }), enabled: val } })} />
                                         </div>
                                     </div>
                                 </div>
@@ -545,76 +551,76 @@ export function PropertiesPanel({
 
                             {/* FORM CARD STYLING (Merged rich features) */}
                             {selectionContext === 'formcard' && (
-                                <div className="space-y-6">
-                                    <div className="space-y-4">
-                                        <Label className="text-xs font-bold uppercase tracking-widest text-emerald-500">Card Design</Label>
+                                <div className="space-y-5">
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">Card Design</Label>
 
-                                        <div className="space-y-2">
-                                            <Label className="text-xs text-slate-600">Card Background</Label>
-                                            <div className="flex gap-2">
-                                                <input type="color" value={currentPage.layout.backgroundColor} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, backgroundColor: e.target.value } })} className="w-9 h-9 rounded-lg border border-slate-200" />
-                                                <Input value={currentPage.layout.backgroundColor} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, backgroundColor: e.target.value } })} className="flex-1 h-9 text-xs font-mono" />
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] text-slate-500 uppercase tracking-wide">Card Background</Label>
+                                            <div className="flex gap-1.5 items-center">
+                                                <input type="color" value={currentPage.layout.backgroundColor} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, backgroundColor: e.target.value } })} className="w-6 h-6 rounded border border-slate-200 p-0 cursor-pointer" />
+                                                <Input value={currentPage.layout.backgroundColor} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, backgroundColor: e.target.value } })} className="flex-1 h-7 text-[10px] font-mono" />
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2"><Label className="text-xs text-slate-500">Rounded ({currentPage.layout.borderRadius}px)</Label><Slider value={[currentPage.layout.borderRadius]} min={0} max={64} step={1} onValueChange={([v]) => onUpdatePage({ layout: { ...currentPage.layout, borderRadius: v } })} /></div>
-                                            <div className="space-y-2">
-                                                <div className="flex justify-between"><Label className="text-xs text-slate-500">Shadow</Label><Switch checked={currentPage.layout.shadow?.enabled} className="h-4 w-7" onCheckedChange={(v) => onUpdatePage({ layout: { ...currentPage.layout, shadow: { ...(currentPage.layout.shadow || { x: 0, y: 20, blur: 50, spread: -10, color: "rgba(0,0,0,0.1)" }), enabled: v } } })} /></div>
-                                                {currentPage.layout.shadow?.enabled && <Slider value={[currentPage.layout.shadow?.blur || 0]} min={0} max={100} onValueChange={([v]) => onUpdatePage({ layout: { ...currentPage.layout, shadow: { ...currentPage.layout.shadow!, blur: v } } })} />}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1"><Label className="text-[9px] text-slate-500">Rounded ({currentPage.layout.borderRadius}px)</Label><Slider className="scale-90 origin-left w-[110%]" value={[currentPage.layout.borderRadius]} min={0} max={64} step={1} onValueChange={([v]) => onUpdatePage({ layout: { ...currentPage.layout, borderRadius: v } })} /></div>
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between items-center"><Label className="text-[9px] text-slate-500">Shadow</Label><Switch checked={currentPage.layout.shadow?.enabled} className="h-3 w-5 scale-75" onCheckedChange={(v) => onUpdatePage({ layout: { ...currentPage.layout, shadow: { ...(currentPage.layout.shadow || { x: 0, y: 20, blur: 50, spread: -10, color: "rgba(0,0,0,0.1)" }), enabled: v } } })} /></div>
+                                                {currentPage.layout.shadow?.enabled && <Slider className="scale-90 origin-left w-[110%]" value={[currentPage.layout.shadow?.blur || 0]} min={0} max={100} onValueChange={([v]) => onUpdatePage({ layout: { ...currentPage.layout, shadow: { ...currentPage.layout.shadow!, blur: v } } })} />}
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* SPLIT LAYOUT (User's better version) */}
-                                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                                    <div className="space-y-3 pt-3 border-t border-slate-100">
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <Columns className="h-4 w-4 text-pink-500" />
-                                                <Label className="text-xs font-bold uppercase tracking-widest text-slate-800">Split Layout</Label>
+                                            <div className="flex items-center gap-1.5">
+                                                <Columns className="h-3 w-3 text-pink-500" />
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-800">Split Layout</Label>
                                             </div>
-                                            <Switch checked={currentPage.layout.splitLayout?.enabled || false} onCheckedChange={(v) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { enabled: v, image: currentPage.layout.splitLayout?.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564', position: 'right', focalPoint: { x: 50, y: 50 }, overlay: { enabled: true, color: '#000', opacity: 0.2 } } } })} />
+                                            <Switch className="scale-75 origin-right" checked={currentPage.layout.splitLayout?.enabled || false} onCheckedChange={(v) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { enabled: v, image: currentPage.layout.splitLayout?.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564', position: 'right', focalPoint: { x: 50, y: 50 }, overlay: { enabled: true, color: '#000', opacity: 0.2 } } } })} />
                                         </div>
 
                                         {currentPage.layout.splitLayout?.enabled && (
-                                            <div className="space-y-4 pl-3 border-l-2 border-pink-100/50">
-                                                <div className="space-y-2">
-                                                    <Label className="text-xs text-slate-600">Cover Image</Label>
-                                                    <Input value={currentPage.layout.splitLayout.image} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, image: e.target.value } } })} className="h-8 text-xs" />
+                                            <div className="space-y-3 pl-2 border-l-2 border-pink-100/50">
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[9px] text-slate-500">Cover Image</Label>
+                                                    <Input value={currentPage.layout.splitLayout.image} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, image: e.target.value } } })} className="h-7 text-[10px]" />
                                                 </div>
-                                                <div className="flex gap-1 p-1 bg-slate-100 rounded-lg">
+                                                <div className="flex gap-1 p-0.5 bg-slate-100 rounded-md">
                                                     {['left', 'right'].map(pos => (
                                                         <button key={pos} onClick={() => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, position: pos as 'left' | 'right' } } })}
-                                                            className={`flex-1 py-1.5 text-xs font-medium capitalize rounded-md transition-all ${currentPage.layout.splitLayout!.position === pos ? 'bg-white shadow text-slate-900' : 'text-slate-500'}`}>{pos}</button>
+                                                            className={`flex-1 py-1 text-[9px] font-bold uppercase tracking-wider rounded transition-all ${currentPage.layout.splitLayout!.position === pos ? 'bg-white shadow-sm text-slate-900 border border-slate-200' : 'text-slate-400'}`}>{pos}</button>
                                                     ))}
                                                 </div>
-                                                <div className="space-y-3">
-                                                    <Label className="text-xs text-slate-600 flex gap-1 items-center"><Move className="h-3 w-3" /> Focal Point ({currentPage.layout.splitLayout.focalPoint?.x}%, {currentPage.layout.splitLayout.focalPoint?.y}%)</Label>
+                                                <div className="space-y-2">
+                                                    <Label className="text-[9px] text-slate-500 flex gap-1 items-center"><Move className="h-2.5 w-2.5" /> Focal Point ({currentPage.layout.splitLayout.focalPoint?.x}%, {currentPage.layout.splitLayout.focalPoint?.y}%)</Label>
                                                     <div className="grid grid-cols-2 gap-2">
-                                                        <Slider value={[currentPage.layout.splitLayout.focalPoint?.x || 50]} min={0} max={100} onValueChange={([x]) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, focalPoint: { ...currentPage.layout.splitLayout!.focalPoint, x } } } })} />
-                                                        <Slider value={[currentPage.layout.splitLayout.focalPoint?.y || 50]} min={0} max={100} onValueChange={([y]) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, focalPoint: { ...currentPage.layout.splitLayout!.focalPoint, y } } } })} />
+                                                        <Slider className="scale-90 origin-left w-[110%]" value={[currentPage.layout.splitLayout.focalPoint?.x || 50]} min={0} max={100} onValueChange={([x]) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, focalPoint: { ...currentPage.layout.splitLayout!.focalPoint, x } } } })} />
+                                                        <Slider className="scale-90 origin-left w-[110%]" value={[currentPage.layout.splitLayout.focalPoint?.y || 50]} min={0} max={100} onValueChange={([y]) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, focalPoint: { ...currentPage.layout.splitLayout!.focalPoint, y } } } })} />
                                                     </div>
                                                 </div>
-                                                <div className="space-y-2">
-                                                    <Label className="text-xs text-slate-600 flex justify-between"><span>Overlay Opacity</span><span>{Math.round((currentPage.layout.splitLayout.overlay?.opacity || 0) * 100)}%</span></Label>
-                                                    <Slider value={[(currentPage.layout.splitLayout.overlay?.opacity || 0) * 100]} max={100} onValueChange={([v]) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, overlay: { ...currentPage.layout.splitLayout!.overlay, opacity: v / 100 } } } })} />
+                                                <div className="space-y-1">
+                                                    <Label className="text-[9px] text-slate-500 flex justify-between"><span>Overlay Opacity</span><span>{Math.round((currentPage.layout.splitLayout.overlay?.opacity || 0) * 100)}%</span></Label>
+                                                    <Slider className="scale-90 origin-left w-[110%]" value={[(currentPage.layout.splitLayout.overlay?.opacity || 0) * 100]} max={100} onValueChange={([v]) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, overlay: { ...currentPage.layout.splitLayout!.overlay, opacity: v / 100 } } } })} />
                                                 </div>
                                             </div>
                                         )}
                                     </div>
 
                                     {/* TYPOGRAPHY & WIDTH */}
-                                    <div className="space-y-4 pt-4 border-t border-slate-100">
-                                        <Label className="text-xs font-bold uppercase tracking-widest text-slate-400">Global Settings</Label>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-500">Text Color</Label>
-                                                <div className="flex gap-2"><input type="color" value={currentPage.layout.textColor} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, textColor: e.target.value } })} className="w-8 h-8 rounded border" /><Input value={currentPage.layout.textColor} className="h-8 text-[10px]" /></div>
+                                    <div className="space-y-3 pt-3 border-t border-slate-100">
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Global Settings</Label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1">
+                                                <Label className="text-[9px] text-slate-500">Text Color</Label>
+                                                <div className="flex gap-1.5 items-center"><input type="color" value={currentPage.layout.textColor} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, textColor: e.target.value } })} className="w-5 h-5 rounded border p-0 cursor-pointer" /><Input value={currentPage.layout.textColor} className="h-6 text-[10px] px-1" /></div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-500">Max Width</Label>
+                                            <div className="space-y-1">
+                                                <Label className="text-[9px] text-slate-500">Max Width</Label>
                                                 <Select value={currentPage.layout.maxWidth} onValueChange={(val: any) => onUpdatePage({ layout: { ...currentPage.layout, maxWidth: val } })}>
-                                                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                                                    <SelectTrigger className="h-6 text-[10px]"><SelectValue /></SelectTrigger>
                                                     <SelectContent>
                                                         <SelectItem value="sm">Small (640px)</SelectItem>
                                                         <SelectItem value="md">Medium (768px)</SelectItem>
@@ -632,36 +638,36 @@ export function PropertiesPanel({
 
                     {/* ========== SETTINGS TAB (User's better layout) ========== */}
                     {activeSection === "settings" && (
-                        <div className="space-y-6">
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
-                                    <Layers className="h-4 w-4 text-slate-500" />
-                                    <span className="text-xs font-medium text-slate-600">Form Behavior</span>
+                        <div className="space-y-4">
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2 p-1.5 bg-slate-50 rounded-md border border-slate-100">
+                                    <Layers className="h-3.5 w-3.5 text-slate-500" />
+                                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Form Behavior</span>
                                 </div>
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     {[
                                         { label: "Progress Bar", desc: "Show completion status", default: true },
                                         { label: "Question Numbers", desc: "Display 1, 2, 3...", default: true },
                                         { label: "Allow Back Navigation", desc: "Let users review answers", default: true },
                                         { label: "Auto-save Responses", desc: "Save progress locally", default: false },
                                     ].map((item, i) => (
-                                        <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:border-slate-200 transition-all">
-                                            <div><Label className="text-xs font-medium text-slate-700">{item.label}</Label><p className="text-[10px] text-slate-400">{item.desc}</p></div>
-                                            <Switch defaultChecked={item.default} />
+                                        <div key={i} className="flex items-center justify-between p-2 rounded-md border border-slate-100 hover:border-slate-200 transition-all">
+                                            <div><Label className="text-[10px] font-medium text-slate-700">{item.label}</Label><p className="text-[9px] text-slate-400">{item.desc}</p></div>
+                                            <Switch className="scale-75 origin-right" defaultChecked={item.default} />
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="space-y-4 pt-2">
-                                <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
-                                    <Monitor className="h-4 w-4 text-slate-500" />
-                                    <span className="text-xs font-medium text-slate-600">Display Settings</span>
+                            <div className="space-y-3 pt-2">
+                                <div className="flex items-center gap-2 p-1.5 bg-slate-50 rounded-md border border-slate-100">
+                                    <Monitor className="h-3.5 w-3.5 text-slate-500" />
+                                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Display Settings</span>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label className="text-xs font-medium text-slate-700">Responsiveness</Label>
-                                    <div className="flex gap-2 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                <div className="space-y-1.5">
+                                    <Label className="text-[10px] font-medium text-slate-700">Responsiveness</Label>
+                                    <div className="flex gap-2 text-[10px] text-slate-500 bg-slate-50 p-2 rounded-md border border-slate-100">
+                                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                                         Your form automatically adapts to Mobile, Tablet, and Desktop screens.
                                     </div>
                                 </div>

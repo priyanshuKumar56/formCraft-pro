@@ -139,17 +139,17 @@ export function EditableSection({
             )}
 
             {/* Elements Rendering Area */}
-            <div className="space-y-6">
+            <div className="space-y-4">
                 {section.elements.length === 0 ? (
-                    <div className={`py-16 text-center rounded-3xl border-2 border-dashed transition-all duration-500 ${isOver
-                        ? "border-violet-400 bg-violet-50/30 scale-[0.98] rotate-1"
-                        : "border-slate-100 bg-slate-50/20"
+                    <div className={`py-8 text-center rounded-2xl border transition-all duration-300 ${isOver
+                        ? "border-dashed border-violet-400 bg-violet-50/30 scale-[0.99] rotate-0"
+                        : "border-dashed border-slate-200 bg-slate-50/30"
                         }`}>
-                        <div className={`w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center transition-all duration-500 ${isOver ? "bg-violet-500 text-white rotate-12 scale-110 shadow-xl" : "bg-slate-100 text-slate-300 shadow-sm"}`}>
-                            <Plus className={`h-6 w-6 transition-transform duration-500 ${isOver ? "rotate-180" : ""}`} />
+                        <div className={`w-8 h-8 rounded-lg mx-auto mb-2 flex items-center justify-center transition-all duration-300 ${isOver ? "bg-violet-500 text-white shadow-md scale-105" : "bg-slate-100 text-slate-400"}`}>
+                            <Plus className={`h-4 w-4 transition-transform duration-300 ${isOver ? "rotate-90" : ""}`} />
                         </div>
-                        <p className={`text-xs font-black uppercase tracking-widest ${isOver ? "text-violet-600" : "text-slate-400"}`}>
-                            {isOver ? "Ready to Drop" : "Drag elements here"}
+                        <p className={`text-[10px] font-bold uppercase tracking-wider ${isOver ? "text-violet-600" : "text-slate-400"}`}>
+                            {isOver ? "Drop" : "Drag elements"}
                         </p>
                     </div>
                 ) : (

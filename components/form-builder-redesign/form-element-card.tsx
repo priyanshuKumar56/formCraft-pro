@@ -144,34 +144,34 @@ export function FormElementCard({
         switch (element.type) {
             case "heading":
                 return (
-                    <h3 className="text-lg font-semibold text-slate-900">{element.label}</h3>
+                    <h3 className="text-sm font-semibold text-slate-900">{element.label}</h3>
                 )
             case "paragraph":
                 return (
-                    <p className="text-sm text-slate-600">{element.label}</p>
+                    <p className="text-xs text-slate-500 leading-relaxed">{element.label}</p>
                 )
             case "image":
                 return (
                     <div className={`flex items-center justify-${element.imagePosition || 'center'}`}>
-                        <div className="w-full h-32 bg-slate-100 rounded-lg flex items-center justify-center border-2 border-dashed border-slate-300">
-                            <ImageIcon className="h-8 w-8 text-slate-400" />
+                        <div className="w-full h-24 bg-slate-50 rounded-md flex items-center justify-center border border-dashed border-slate-200">
+                            <ImageIcon className="h-5 w-5 text-slate-300" />
                         </div>
                     </div>
                 )
             case "start-button":
             case "submit-button":
                 return (
-                    <button className="px-6 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-medium rounded-lg shadow-sm">
+                    <button className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-medium rounded-md shadow-sm">
                         {element.label}
                     </button>
                 )
             case "rating":
                 return (
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">{element.label}</label>
-                        <div className="flex gap-1">
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-700">{element.label}</label>
+                        <div className="flex gap-0.5">
                             {[1, 2, 3, 4, 5].map((star) => (
-                                <Star key={star} className="h-6 w-6 text-slate-300 hover:text-yellow-400 cursor-pointer" />
+                                <Star key={star} className="h-4 w-4 text-slate-300 hover:text-yellow-400 cursor-pointer" />
                             ))}
                         </div>
                     </div>
@@ -179,56 +179,40 @@ export function FormElementCard({
             case "toggle":
                 return (
                     <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-slate-700">{element.label}</label>
-                        <div className="w-10 h-6 bg-slate-200 rounded-full relative cursor-pointer">
-                            <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm" />
+                        <label className="text-xs font-medium text-slate-700">{element.label}</label>
+                        <div className="w-8 h-4 bg-slate-200 rounded-full relative cursor-pointer">
+                            <div className="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full shadow-sm" />
                         </div>
                     </div>
                 )
             case "select":
                 return (
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-700">
                             {element.label}
-                            {element.required && <span className="text-red-500 ml-1">*</span>}
+                            {element.required && <span className="text-red-500 ml-0.5">*</span>}
                         </label>
-                        <div className="h-10 px-3 border border-slate-200 rounded-lg bg-white flex items-center justify-between text-sm text-slate-400">
-                            <span>Select an option...</span>
-                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="h-8 px-2 border border-slate-200 rounded-md bg-white flex items-center justify-between text-xs text-slate-400">
+                            <span>Select...</span>
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
                         </div>
                     </div>
                 )
             case "radio":
-                return (
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">
-                            {element.label}
-                            {element.required && <span className="text-red-500 ml-1">*</span>}
-                        </label>
-                        <div className="space-y-2">
-                            {(element.options || ["Option 1", "Option 2"]).slice(0, 3).map((option, i) => (
-                                <label key={i} className="flex items-center gap-2 cursor-pointer">
-                                    <div className="w-4 h-4 rounded-full border-2 border-slate-300" />
-                                    <span className="text-sm text-slate-600">{option}</span>
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-                )
             case "checkbox":
                 return (
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-700">
                             {element.label}
-                            {element.required && <span className="text-red-500 ml-1">*</span>}
+                            {element.required && <span className="text-red-500 ml-0.5">*</span>}
                         </label>
-                        <div className="space-y-2">
-                            {(element.options || ["Option 1", "Option 2"]).slice(0, 3).map((option, i) => (
+                        <div className="space-y-1.5">
+                            {(element.options || ["Option 1", "Option 2"]).slice(0, 2).map((option, i) => (
                                 <label key={i} className="flex items-center gap-2 cursor-pointer">
-                                    <div className="w-4 h-4 rounded border-2 border-slate-300" />
-                                    <span className="text-sm text-slate-600">{option}</span>
+                                    <div className={`w-3.5 h-3.5 ${element.type === 'radio' ? 'rounded-full' : 'rounded'} border border-slate-300`} />
+                                    <span className="text-xs text-slate-600">{option}</span>
                                 </label>
                             ))}
                         </div>
@@ -236,28 +220,27 @@ export function FormElementCard({
                 )
             case "file":
                 return (
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-700">
                             {element.label}
-                            {element.required && <span className="text-red-500 ml-1">*</span>}
+                            {element.required && <span className="text-red-500 ml-0.5">*</span>}
                         </label>
-                        <div className="h-20 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center bg-slate-50">
-                            <Upload className="h-5 w-5 text-slate-400 mb-1" />
-                            <span className="text-xs text-slate-500">Click or drop files</span>
+                        <div className="h-12 border border-dashed border-slate-300 rounded-md flex flex-col items-center justify-center bg-slate-50">
+                            <span className="text-[10px] text-slate-400">Upload file</span>
                         </div>
                     </div>
                 )
             default:
                 return (
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-slate-700">
                             {element.label}
-                            {element.required && <span className="text-red-500 ml-1">*</span>}
+                            {element.required && <span className="text-red-500 ml-0.5">*</span>}
                         </label>
                         <Input
                             type={element.type === "email" ? "email" : element.type === "number" ? "number" : "text"}
-                            placeholder={element.placeholder || "Enter your answer..."}
-                            className="h-10 text-sm border-slate-200 bg-white"
+                            placeholder={element.placeholder || "Answer..."}
+                            className="h-8 text-xs border-slate-200 bg-white"
                             disabled
                         />
                     </div>
@@ -273,53 +256,53 @@ export function FormElementCard({
                 e.stopPropagation()
                 onSelect()
             }}
-            className={`group relative bg-white rounded-xl transition-all duration-200 cursor-pointer ${isDragging
+            className={`group relative bg-white rounded-lg transition-all duration-200 cursor-pointer ${isDragging
                 ? "opacity-50 scale-98 shadow-xl"
                 : isSelected
-                    ? "ring-2 ring-violet-500 ring-offset-2 shadow-lg"
-                    : "hover:shadow-md border border-slate-200 hover:border-slate-300"
+                    ? "ring-1 ring-violet-500 shadow-md"
+                    : "hover:shadow-sm border border-slate-200 hover:border-slate-300"
                 }`}
         >
             {/* Drag Handle */}
-            <div className="absolute left-0 top-0 bottom-0 w-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="p-1 rounded cursor-grab active:cursor-grabbing hover:bg-slate-100">
-                    <GripVertical className="h-4 w-4 text-slate-400" />
+            <div className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="p-0.5 rounded cursor-grab active:cursor-grabbing hover:bg-slate-100">
+                    <GripVertical className="h-3 w-3 text-slate-400" />
                 </div>
             </div>
 
             {/* Element Type Badge */}
-            <div className={`absolute -top-2 left-10 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white ${colorClass}`}>
-                <Icon className="h-2.5 w-2.5" />
+            <div className={`absolute -top-1.5 left-8 flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold text-white shadow-sm ${colorClass}`}>
+                <Icon className="h-2 w-2" />
                 <span className="capitalize">{element.type.replace("-", " ")}</span>
             </div>
 
             {/* Element Actions */}
-            <div className="absolute -top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute top-1 right-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                     onClick={(e) => { e.stopPropagation(); /* duplicate logic */ }}
-                    className="p-1 bg-white rounded shadow-sm border border-slate-200 hover:bg-slate-50"
+                    className="p-1 bg-white rounded-md shadow-sm border border-slate-100 hover:bg-slate-50"
                     title="Duplicate"
                 >
-                    <Copy className="h-3 w-3 text-slate-500" />
+                    <Copy className="h-2.5 w-2.5 text-slate-400" />
                 </button>
                 <button
                     onClick={(e) => { e.stopPropagation(); onDelete() }}
-                    className="p-1 bg-white rounded shadow-sm border border-slate-200 hover:bg-red-50 hover:border-red-200"
+                    className="p-1 bg-white rounded-md shadow-sm border border-slate-100 hover:bg-red-50 hover:border-red-100"
                     title="Delete"
                 >
-                    <Trash2 className="h-3 w-3 text-red-500" />
+                    <Trash2 className="h-2.5 w-2.5 text-red-500" />
                 </button>
             </div>
 
             {/* Element Content */}
-            <div className="pl-10 pr-4 py-4">
+            <div className="pl-8 pr-3 py-3">
                 {renderElementPreview()}
             </div>
 
             {/* Fixed Indicator for Input Zones */}
             {isFixed && (
-                <div className="absolute bottom-1 right-2 text-[10px] text-slate-400 font-medium">
-                    Fixed Layout
+                <div className="absolute bottom-1 right-2 text-[8px] text-slate-300 uppercase tracking-widest font-bold">
+                    Fixed
                 </div>
             )}
         </div>

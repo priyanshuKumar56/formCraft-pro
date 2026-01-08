@@ -6,33 +6,9 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import type { FormPage } from "@/types/form"
 import {
-    Type,
-    Mail,
-    Hash,
-    MessageSquare,
-    Circle,
-    CheckSquare,
-    Calendar,
-    Upload,
-    Plus,
-    Layers,
-    X,
-    GripVertical,
-    ChevronUp,
-    ChevronDown,
-    Search,
-    Heading1,
-    AlignLeft,
-    ImageIcon,
-    Play,
-    ChevronLeft,
-    ChevronRight,
-    ToggleLeft,
-    Phone,
-    Link as LinkIcon,
-    Star,
-    List,
-    FileText,
+    Type, Mail, Hash, MessageSquare, Circle, CheckSquare, Calendar, Upload, Plus,
+    GripVertical, ChevronUp, ChevronDown, Search, Heading1, AlignLeft, ImageIcon, Play,
+    ChevronLeft, ChevronRight, ToggleLeft, Phone, Link as LinkIcon, Star, List, FileText, X
 } from "lucide-react"
 
 interface ToolboxPanelProps {
@@ -118,18 +94,19 @@ function DraggableElementCard({
         <div
             ref={drag as any}
             onClick={() => onAddElement(element.type)}
-            className={`group flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all duration-200 ${isDragging
-                    ? "opacity-40 scale-95"
-                    : "hover:bg-violet-50 hover:shadow-sm active:scale-98"
+            className={`group flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-all duration-200 ${isDragging
+                ? "opacity-40 scale-95"
+                : "hover:bg-violet-50 hover:shadow-sm active:scale-98"
                 }`}
         >
-            <div className="w-9 h-9 rounded-lg bg-slate-100 group-hover:bg-violet-100 flex items-center justify-center transition-colors">
-                <element.icon className="h-4 w-4 text-slate-600 group-hover:text-violet-600" />
+            <div className="w-7 h-7 rounded-md bg-slate-100 group-hover:bg-violet-100 flex items-center justify-center transition-colors flex-shrink-0">
+                <element.icon className="h-3.5 w-3.5 text-slate-600 group-hover:text-violet-600" />
             </div>
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900">{element.label}</p>
-                <p className="text-xs text-slate-500 truncate">{element.description}</p>
+                <p className="text-[11px] font-semibold text-slate-800 leading-tight">{element.label}</p>
+                <p className="text-[9px] text-slate-400 truncate leading-tight mt-0.5">{element.description}</p>
             </div>
+            <GripVertical className="h-3 w-3 text-slate-300 opacity-0 group-hover:opacity-100" />
         </div>
     )
 }
@@ -179,38 +156,36 @@ export function ToolboxPanel({
 
     return (
         <>
-            {/* Collapsed State Toggle */}
             {!isOpen && (
                 <button
                     onClick={onToggle}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-6 h-16 bg-white border border-l-0 border-slate-200 rounded-r-lg shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-5 h-12 bg-white border border-l-0 border-slate-200 rounded-r-md shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors"
                 >
-                    <ChevronRight className="h-4 w-4 text-slate-400" />
+                    <ChevronRight className="h-3 w-3 text-slate-400" />
                 </button>
             )}
 
-            {/* Panel */}
             <div
-                className={`bg-white border-r border-slate-200 flex-shrink-0 flex flex-col transition-all duration-300 ${isOpen ? "w-72" : "w-0 overflow-hidden"
+                className={`bg-white border-r border-slate-200 flex-shrink-0 flex flex-col transition-all duration-300 ${isOpen ? "w-60" : "w-0 overflow-hidden"
                     }`}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                    <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
+                <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-100">
+                    <div className="flex items-center gap-0.5 p-0.5 bg-slate-100 rounded-md">
                         <button
                             onClick={() => onTabChange("elements")}
-                            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${activeTab === "elements"
-                                    ? "bg-white text-slate-900 shadow-sm"
-                                    : "text-slate-600 hover:text-slate-900"
+                            className={`px-2.5 py-1 text-[10px] font-semibold rounded transition-all ${activeTab === "elements"
+                                ? "bg-white text-slate-900 shadow-sm"
+                                : "text-slate-500 hover:text-slate-800"
                                 }`}
                         >
                             Elements
                         </button>
                         <button
                             onClick={() => onTabChange("pages")}
-                            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${activeTab === "pages"
-                                    ? "bg-white text-slate-900 shadow-sm"
-                                    : "text-slate-600 hover:text-slate-900"
+                            className={`px-2.5 py-1 text-[10px] font-semibold rounded transition-all ${activeTab === "pages"
+                                ? "bg-white text-slate-900 shadow-sm"
+                                : "text-slate-500 hover:text-slate-800"
                                 }`}
                         >
                             Pages
@@ -220,41 +195,41 @@ export function ToolboxPanel({
                         onClick={onToggle}
                         className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
                     >
-                        <ChevronLeft className="h-4 w-4" />
+                        <ChevronLeft className="h-3.5 w-3.5" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto custom-scrollbar">
                     {activeTab === "elements" ? (
-                        <div className="p-3">
+                        <div className="p-2.5">
                             {/* Search */}
-                            <div className="relative mb-4">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                            <div className="relative mb-3">
+                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                                 <Input
-                                    placeholder="Search elements..."
+                                    placeholder="Search..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-9 h-9 text-sm bg-slate-50 border-slate-200 focus:bg-white"
+                                    className="pl-8 h-8 text-xs bg-slate-50 border-slate-200 focus:bg-white focus:border-violet-500"
                                 />
                             </div>
 
                             {/* Categories */}
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 {filteredCategories.map((category) => (
                                     <div key={category.name}>
                                         <button
                                             onClick={() => toggleCategory(category.name)}
-                                            className="flex items-center justify-between w-full px-2 py-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider hover:text-slate-700"
+                                            className="flex items-center justify-between w-full px-1.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
                                         >
                                             {category.name}
                                             <ChevronDown
-                                                className={`h-3.5 w-3.5 transition-transform ${expandedCategories.includes(category.name) ? "" : "-rotate-90"
+                                                className={`h-3 w-3 transition-transform duration-200 ${expandedCategories.includes(category.name) ? "" : "-rotate-90"
                                                     }`}
                                             />
                                         </button>
                                         {expandedCategories.includes(category.name) && (
-                                            <div className="mt-1 space-y-0.5">
+                                            <div className="mt-0.5 space-y-0.5">
                                                 {category.elements.map((element) => (
                                                     <DraggableElementCard
                                                         key={element.type}
@@ -269,33 +244,33 @@ export function ToolboxPanel({
                             </div>
                         </div>
                     ) : (
-                        <div className="p-3">
+                        <div className="p-2.5">
                             {/* Add Page Button */}
                             <Button
                                 onClick={onAddPage}
                                 variant="outline"
                                 size="sm"
-                                className="w-full mb-4 h-9 text-sm border-dashed border-slate-300 text-slate-600 hover:text-violet-600 hover:border-violet-400 hover:bg-violet-50"
+                                className="w-full mb-3 h-8 text-xs border-dashed border-slate-300 text-slate-600 hover:text-violet-600 hover:border-violet-400 hover:bg-violet-50"
                             >
-                                <Plus className="h-4 w-4 mr-1.5" />
-                                Add New Page
+                                <Plus className="h-3.5 w-3.5 mr-1.5" />
+                                Add Page
                             </Button>
 
                             {/* Pages List */}
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                                 {pages.map((page, index) => (
                                     <div
                                         key={page.id}
                                         onClick={() => onPageChange(index)}
-                                        className={`group relative p-3 rounded-lg cursor-pointer transition-all ${index === currentPageIndex
-                                                ? "bg-violet-50 border border-violet-200 shadow-sm"
-                                                : "bg-slate-50 border border-transparent hover:border-slate-200 hover:bg-white"
+                                        className={`group relative p-2 rounded-md cursor-pointer transition-all ${index === currentPageIndex
+                                            ? "bg-violet-50 border border-violet-200 shadow-sm"
+                                            : "bg-slate-50 border border-transparent hover:border-slate-200 hover:bg-white"
                                             }`}
                                     >
                                         <div className="flex items-center gap-2">
-                                            <div className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-medium ${index === currentPageIndex
-                                                    ? "bg-violet-600 text-white"
-                                                    : "bg-slate-200 text-slate-600"
+                                            <div className={`w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold ${index === currentPageIndex
+                                                ? "bg-violet-600 text-white"
+                                                : "bg-slate-200 text-slate-500"
                                                 }`}>
                                                 {index + 1}
                                             </div>
@@ -309,58 +284,60 @@ export function ToolboxPanel({
                                                             if (e.key === "Enter") handleSavePageTitle()
                                                             if (e.key === "Escape") setEditingPageIndex(null)
                                                         }}
-                                                        className="h-6 text-sm px-1"
+                                                        className="h-6 text-xs px-1"
                                                         autoFocus
                                                         onClick={(e) => e.stopPropagation()}
                                                     />
                                                 ) : (
-                                                    <p
-                                                        className="text-sm font-medium text-slate-900 truncate"
-                                                        onDoubleClick={(e) => {
-                                                            e.stopPropagation()
-                                                            setEditingPageIndex(index)
-                                                            setTempPageTitle(page.title)
-                                                        }}
-                                                    >
-                                                        {page.title}
-                                                    </p>
+                                                    <div className="flex items-center justify-between">
+                                                        <p
+                                                            className="text-xs font-semibold text-slate-800 truncate"
+                                                            onDoubleClick={(e) => {
+                                                                e.stopPropagation()
+                                                                setEditingPageIndex(index)
+                                                                setTempPageTitle(page.title)
+                                                            }}
+                                                        >
+                                                            {page.title}
+                                                        </p>
+                                                    </div>
                                                 )}
-                                                <div className="flex items-center gap-1.5 mt-0.5">
-                                                    <span className={`text-xs capitalize ${page.type === "welcome" ? "text-emerald-600" :
-                                                            page.type === "ending" ? "text-violet-600" : "text-slate-500"
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className={`text-[10px] capitalize ${page.type === "welcome" ? "text-emerald-600" :
+                                                        page.type === "ending" ? "text-violet-600" : "text-slate-400"
                                                         }`}>
                                                         {page.type}
                                                     </span>
-                                                    <span className="text-slate-300">•</span>
-                                                    <span className="text-xs text-slate-400">
-                                                        {page.sections.reduce((acc, s) => acc + s.elements.length, 0)} fields
+                                                    <span className="text-slate-300 text-[10px]">•</span>
+                                                    <span className="text-[10px] text-slate-400">
+                                                        {page.sections.reduce((acc, s) => acc + s.elements.length, 0)} items
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Page Actions */}
-                                        <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm rounded shadow-sm border border-slate-100 p-0.5">
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onMovePageUp(index) }}
-                                                className="p-1 rounded hover:bg-slate-200 disabled:opacity-30"
+                                                className="p-1 rounded hover:bg-slate-100 disabled:opacity-30"
                                                 disabled={index === 0}
                                             >
-                                                <ChevronUp className="h-3 w-3 text-slate-500" />
+                                                <ChevronUp className="h-2.5 w-2.5 text-slate-500" />
                                             </button>
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); onMovePageDown(index) }}
-                                                className="p-1 rounded hover:bg-slate-200 disabled:opacity-30"
+                                                className="p-1 rounded hover:bg-slate-100 disabled:opacity-30"
                                                 disabled={index === pages.length - 1}
                                             >
-                                                <ChevronDown className="h-3 w-3 text-slate-500" />
+                                                <ChevronDown className="h-2.5 w-2.5 text-slate-500" />
                                             </button>
                                             {pages.length > 1 && (
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); onDeletePage(index) }}
-                                                    className="p-1 rounded hover:bg-red-100 text-slate-400 hover:text-red-600"
+                                                    className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-600"
                                                 >
-                                                    <X className="h-3 w-3" />
+                                                    <X className="h-2.5 w-2.5" />
                                                 </button>
                                             )}
                                         </div>

@@ -237,27 +237,25 @@ export function FormCanvas({
 
     return (
         // CANVAS AREA (Level 1): The outer gray workspace (bg-slate-100)
-        // Added padding (p-8) to separate it from the inner Background Area
-        <div className="flex-1 overflow-auto bg-slate-100 flex items-start justify-center p-8 md:p-12 scroll-smooth">
+        // Dense Mode: Reduced padding (p-4 md:p-6)
+        <div className="flex-1 overflow-auto bg-slate-100 flex items-start justify-center p-4 md:p-6 scroll-smooth">
 
             {/* BACKGROUND AREA (Level 2): The "Page" or "Screen" users see */}
-            {/* Added shadow-2xl and rounded-2xl to detach it from the canvas */}
-            {/* Added max-w-7xl to keep it constrained as a 'screen' */}
             <div
                 onClick={handleBackgroundClick}
-                className={`background-area relative w-full max-w-[1400px] min-h-[85vh] rounded-3xl shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden ring-offset-4 ring-offset-slate-100 ${isBackgroundSelected ? 'ring-4 ring-pink-500 shadow-pink-500/10' : 'hover:shadow-3xl hover:-translate-y-1'}`}
+                className={`background-area relative w-full max-w-[1240px] min-h-[85vh] rounded-2xl shadow-xl transition-all duration-300 cursor-pointer overflow-hidden ring-offset-2 ring-offset-slate-100 ${isBackgroundSelected ? 'ring-2 ring-pink-500 shadow-pink-500/10' : 'hover:shadow-2xl'}`}
                 style={getBackgroundStyle()}
             >
                 {/* Selection indicator for background */}
                 {isBackgroundSelected && (
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-1.5 bg-pink-600 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg flex items-center gap-2">
-                        <Sparkles className="h-3 w-3" /> Background Selected
+                    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 px-3 py-1 bg-pink-600 text-white text-[9px] font-bold uppercase tracking-wider rounded-full shadow-lg flex items-center gap-1.5">
+                        <Sparkles className="h-2.5 w-2.5" /> Background
                     </div>
                 )}
 
                 {/* Inner padding container - Content Alignment */}
                 <div
-                    className="background-inner w-full min-h-full flex flex-col items-center py-16 px-4 md:px-8"
+                    className="background-inner w-full min-h-full flex flex-col items-center py-8 px-4 md:px-6"
                 >
                     {/* FORM CARD (Level 3): The actual form content */}
                     <div
@@ -330,18 +328,18 @@ export function FormCanvas({
                     </div>
 
                     {/* Add Section Buttons (Floating below card) */}
-                    <div className="flex items-center justify-center gap-3 mt-12 mb-8 transition-all duration-300 bg-white/50 backdrop-blur-sm p-2 rounded-xl border border-white/20 shadow-sm hover:shadow-md hover:bg-white/80">
+                    <div className="flex items-center justify-center gap-2 mt-6 mb-8 transition-all duration-300 bg-white/50 backdrop-blur-sm p-1.5 rounded-lg border border-white/20 shadow-sm hover:shadow-md hover:bg-white/80">
                         <button onClick={() => onAddSection("input-zone")}
-                            className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md hover:border-violet-400 hover:-translate-y-0.5 transition-all text-sm">
-                            <div className="w-6 h-6 rounded-md bg-violet-100 flex items-center justify-center text-violet-600 group-hover:bg-violet-600 group-hover:text-white transition-colors">
-                                <Plus className="h-3.5 w-3.5" />
+                            className="group flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-md shadow-sm hover:shadow-md hover:border-violet-400 hover:-translate-y-0.5 transition-all text-xs">
+                            <div className="w-5 h-5 rounded bg-violet-100 flex items-center justify-center text-violet-600 group-hover:bg-violet-600 group-hover:text-white transition-colors">
+                                <Plus className="h-2.5 w-2.5" />
                             </div>
                             <span className="font-medium text-slate-700">Input Zone</span>
                         </button>
                         <button onClick={() => onAddSection("container")}
-                            className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md hover:border-emerald-400 hover:-translate-y-0.5 transition-all text-sm">
-                            <div className="w-6 h-6 rounded-md bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                                <Layout className="h-3.5 w-3.5" />
+                            className="group flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-md shadow-sm hover:shadow-md hover:border-emerald-400 hover:-translate-y-0.5 transition-all text-xs">
+                            <div className="w-5 h-5 rounded bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                <Layout className="h-2.5 w-2.5" />
                             </div>
                             <span className="font-medium text-slate-700">Container</span>
                         </button>
