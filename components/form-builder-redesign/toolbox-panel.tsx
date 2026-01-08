@@ -2,9 +2,11 @@
 
 import { useState } from "react"
 import { useDrag } from "react-dnd"
+import { useAppSelector, useAppDispatch } from "@/store/hooks"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import type { FormPage } from "@/types/form"
+import { addToRecentTemplates } from "@/store/slices/builderSlice"
 import {
     Type, Mail, Hash, MessageSquare, Circle, CheckSquare, Calendar, Upload, Plus,
     GripVertical, ChevronUp, ChevronDown, Search, Heading1, AlignLeft, ImageIcon, Play,
@@ -82,13 +84,17 @@ function DraggableElementCard({
     element: { type: string; label: string; icon: React.ElementType; description: string }
     onAddElement: (type: string) => void
 }) {
+    const dispatch = useAppDispatch()
     const [{ isDragging }, drag] = useDrag(() => ({
         type: "form-element",
-        item: { elementType: element.type },
+        item: () => {
+            dispatch(addToRecentTemplates(element.type))
+            return { elementType: element.type }
+        },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
-    }))
+    }), [element.type, dispatch])
 
     return (
         <div
@@ -127,6 +133,8 @@ export function ToolboxPanel({
     onAddElement,
     currentPageTitle,
 }: ToolboxPanelProps) {
+    const dispatch = useAppDispatch()
+    const { templates } = useAppSelector((state) => state.builder)
     const [searchTerm, setSearchTerm] = useState("")
     const [editingPageIndex, setEditingPageIndex] = useState<number | null>(null)
     const [tempPageTitle, setTempPageTitle] = useState("")

@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { PRESET_TEMPLATES } from "@/lib/templates"
-import { useAppDispatch } from "@/store/hooks"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { setFormData } from "@/store/slices/formSlice"
 import { setActiveTab } from "@/store/slices/uiSlice"
+import { setViewMode, setStatusFilter } from "@/store/slices/dashboardSlice"
 import {
   MoreHorizontal,
   ChevronRight,
@@ -23,50 +23,10 @@ import {
 export default function DashboardPage() {
   const router = useRouter()
   const dispatch = useAppDispatch()
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [filter, setFilter] = useState("all")
 
-  // Mock Data - In real app fetch from API
-  const forms = [
-    {
-      id: 1,
-      title: "Product Launch Feedback",
-      responses: 124,
-      status: "published",
-      date: "2 hours ago",
-      color: "from-indigo-500 to-purple-500",
-      accent: "bg-indigo-500"
-    },
-    {
-      id: 2,
-      title: "Annual Survey 2024",
-      responses: 89,
-      status: "draft",
-      date: "5 hours ago",
-      color: "from-emerald-500 to-teal-500",
-      accent: "bg-emerald-500"
-    },
-    {
-      id: 3,
-      title: "Contact Form",
-      responses: 32,
-      status: "published",
-      date: "1 day ago",
-      color: "from-blue-500 to-cyan-500",
-      accent: "bg-blue-500"
-    },
-    {
-      id: 4,
-      title: "Event Registration",
-      responses: 215,
-      status: "archived",
-      date: "2 weeks ago",
-      color: "from-orange-500 to-red-500",
-      accent: "bg-orange-500"
-    }
-  ]
+  const { forms, viewMode, statusFilter } = useAppSelector((state) => state.dashboard)
 
-  const filteredForms = forms.filter(f => filter === "all" || f.status === filter)
+  const filteredForms = forms.filter(f => statusFilter === "all" || f.status === statusFilter)
 
   const handleUseTemplate = (templateKey: string) => {
     const template = PRESET_TEMPLATES[templateKey]
@@ -158,7 +118,7 @@ export default function DashboardPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setViewMode("grid")}
+              onClick={() => dispatch(setViewMode("grid"))}
               className={`rounded-lg ${viewMode === "grid" ? "bg-slate-100 text-slate-900" : "text-slate-400 hover:text-slate-700"}`}
             >
               <Grid size={18} />
@@ -166,7 +126,7 @@ export default function DashboardPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setViewMode("list")}
+              onClick={() => dispatch(setViewMode("list"))}
               className={`rounded-lg ${viewMode === "list" ? "bg-slate-100 text-slate-900" : "text-slate-400 hover:text-slate-700"}`}
             >
               <LayoutList size={18} />
@@ -175,8 +135,8 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2 px-3">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Filter:</span>
               <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
+                value={statusFilter}
+                onChange={(e) => dispatch(setStatusFilter(e.target.value))}
                 className="text-sm font-bold text-slate-900 bg-transparent outline-none cursor-pointer"
               >
                 <option value="all">All Status</option>
