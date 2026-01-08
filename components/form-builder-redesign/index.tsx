@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback } from "react"
+import React, { useCallback } from "react"
 import { useAppSelector, useAppDispatch } from "@/store/hooks"
 import {
     addElement,
@@ -27,6 +27,25 @@ import {
     setLeftPanelOpen,
     setLeftPanelTab,
 } from "@/store/slices/uiSlice"
+import {
+    startDrag,
+    endDrag,
+    setDropTarget,
+    saveToHistory,
+    undo,
+    redo,
+    setDirty,
+    updateBuilderSettings,
+    togglePreviewMode,
+    setDevice,
+    setZoom,
+} from "@/store/slices/builderSlice"
+import {
+    copyElement,
+    copySection,
+    copyPage,
+    clearClipboard,
+} from "@/store/slices/elementSlice"
 import { ModernHeader } from "./header"
 import { ToolboxPanel } from "./toolbox-panel"
 import { PropertiesPanel } from "./properties-panel"
@@ -49,6 +68,12 @@ export function FormBuilderRedesign() {
         isLeftPanelOpen,
         leftPanelTab
     } = useAppSelector((state) => state.ui)
+    const {
+        dragDrop,
+        history,
+        validation,
+        settings,
+    } = useAppSelector((state) => state.builder)
 
     const currentPage = formData.pages[currentPageIndex]
 
@@ -126,6 +151,69 @@ export function FormBuilderRedesign() {
         dispatch(setSelectedElementId(null))
     }, [dispatch, currentPageIndex])
 
+    // Keyboard shortcuts
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+        // Undo/Redo
+        if (e.ctrlKey || e.metaKey) {
+            if (e.key === 'z' && !e.shiftKey) {
+                e.preventDefault()
+                dispatch(undo())
+            } else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') {
+                e.preventDefault()
+                dispatch(redo())
+            } else if (e.key === 'c' && selectedElementId) {
+                e.preventDefault()
+                // Copy selected element
+                const element = currentPage?.sections.flatMap(s => s.elements).find(el => el.id === selectedElementId)
+                if (element) dispatch(copyElement(element))
+            } else if (e.key === 'v' && e.shiftKey) {
+                e.preventDefault()
+                // Paste functionality would go here
+            }
+        }
+        
+        // Delete
+        if (e.key === 'Delete' && selectedElementId) {
+            handleDeleteElement(selectedElementId)
+        }
+        
+        // Preview mode
+        if (e.key === 'p' && e.ctrlKey) {
+            e.preventDefault()
+            dispatch(togglePreviewMode())
+        }
+        
+        // Zoom
+        if (e.ctrlKey && e.key === '=') {
+            e.preventDefault()
+            dispatch(setZoom(Math.min(settings.zoom + 0.1, 2)))
+        } else if (e.ctrlKey && e.key === '-') {
+            e.preventDefault()
+            dispatch(setZoom(Math.max(settings.zoom - 0.1, 0.25)))
+        } else if (e.ctrlKey && e.key === '0') {
+            e.preventDefault()
+            dispatch(setZoom(1))
+        }
+    }, [dispatch, selectedElementId, currentPage, settings.zoom])
+    
+    // Add keyboard event listener
+    React.useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [handleKeyDown])
+    
+    // Auto-save functionality
+    React.useEffect(() => {
+        if (settings.autoSave && validation.isDirty) {
+            const timer = setTimeout(() => {
+                dispatch(saveToHistory(formData))
+                dispatch(setDirty(false))
+            }, settings.autoSaveDelay)
+            
+            return () => clearTimeout(timer)
+        }
+    }, [formData, settings.autoSave, settings.autoSaveDelay, validation.isDirty, dispatch])
+    
     // Form handlers
     const handlePreview = useCallback(() => {
         sessionStorage.setItem("formcraft-preview-data", JSON.stringify(formData))

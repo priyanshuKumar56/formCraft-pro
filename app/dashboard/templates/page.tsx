@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAppDispatch } from "@/store/hooks"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
 import { setFormData } from "@/store/slices/formSlice"
+import { setTemplateCategory } from "@/store/slices/dashboardSlice"
 import { PRESET_TEMPLATES } from "@/lib/templates"
 import { setActiveTab } from "@/store/slices/uiSlice"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,7 @@ import { Sparkles, Zap, Users, MessageSquare, ArrowRight, LayoutTemplate } from 
 export default function TemplatesPage() {
     const router = useRouter()
     const dispatch = useAppDispatch()
-    const [category, setCategory] = useState("all")
+    const category = useAppSelector((state) => state.dashboard.templateCategory)
 
     const handleUseTemplate = (templateKey: string) => {
         const template = PRESET_TEMPLATES[templateKey]
@@ -47,10 +47,10 @@ export default function TemplatesPage() {
                     {categories.map((cat) => (
                         <button
                             key={cat.id}
-                            onClick={() => setCategory(cat.id)}
+                            onClick={() => dispatch(setTemplateCategory(cat.id))}
                             className={`px-4 py-2 rounded-xl text-sm font-bold transition-all border ${category === cat.id
-                                    ? "bg-zinc-900 text-white border-zinc-900 shadow-lg shadow-zinc-200"
-                                    : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-900"
+                                ? "bg-zinc-900 text-white border-zinc-900 shadow-lg shadow-zinc-200"
+                                : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-900"
                                 }`}
                         >
                             {cat.label}

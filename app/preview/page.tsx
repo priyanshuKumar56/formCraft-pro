@@ -13,6 +13,8 @@ import { ArrowRight, ArrowLeft, Check, ImageIcon, Home, Sparkles, Star, Upload }
 import type { FormData, FormElement, FormSection, ButtonStyle } from "@/types/form"
 import { cn } from "@/lib/utils"
 import { getSectionStyles } from "@/lib/styling"
+import { useAppSelector, useAppDispatch } from "@/store/hooks"
+import { setPreviewFormData, setCurrentPage, nextPage, previousPage, submitSuccess, submitError, startSubmission } from "@/store/slices/previewSlice"
 
 const defaultButtonStyle: ButtonStyle = {
   paddingX: 24, paddingY: 12, fontSize: 14, fontWeight: "semibold",
@@ -23,54 +25,69 @@ const defaultButtonStyle: ButtonStyle = {
 }
 
 export default function PreviewPage() {
-  const [formData, setFormData] = useState<FormData | null>(null)
-  const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const [responses, setResponses] = useState<Record<string, any>>({})
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  
+  const dispatch = useAppDispatch()
+  const { formData, currentPageIndex, totalPages, isSubmitting, submitSuccess: reduxSubmitSuccess, submitError: reduxSubmitError } = useAppSelector((state) => state.preview)
 
   useEffect(() => {
     const storedData = sessionStorage.getItem("formcraft-preview-data")
     if (storedData) {
       try {
         const data = JSON.parse(storedData)
-        setFormData(data)
+        dispatch(setPreviewFormData(data))
       } catch (error) {
         console.error("Error parsing form data:", error)
       }
     }
     setIsLoading(false)
-  }, [])
+  }, [dispatch])
 
   const goBackToBuilder = () => {
     window.close()
   }
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     if (!formData?.pages) return
+    
     setIsTransitioning(true)
-    setTimeout(() => {
-      if (currentPageIndex < formData.pages.length - 1) {
-        setCurrentPageIndex(currentPageIndex + 1)
-      } else {
+    
+    // Simulate validation
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    if (currentPageIndex < formData.pages.length - 1) {
+      dispatch(nextPage())
+    } else {
+      // Handle form submission
+      dispatch(startSubmission())
+      
+      try {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        dispatch(submitSuccess(responses))
         setIsSubmitted(true)
+      } catch (error) {
+        dispatch(submitError('Failed to submit form'))
       }
-      setIsTransitioning(false)
-      window.scrollTo({ top: 0, behavior: "smooth" })
-    }, 300)
-  }, [currentPageIndex, formData])
+    }
+    
+    setIsTransitioning(false)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }, [currentPageIndex, formData, dispatch, responses])
 
   const handlePrevious = useCallback(() => {
     setIsTransitioning(true)
     setTimeout(() => {
       if (currentPageIndex > 0) {
-        setCurrentPageIndex(currentPageIndex - 1)
+        dispatch(previousPage())
       }
       setIsTransitioning(false)
       window.scrollTo({ top: 0, behavior: "smooth" })
     }, 300)
-  }, [currentPageIndex])
+  }, [currentPageIndex, dispatch])
 
   const updateResponse = (elementId: string, value: any) => {
     setResponses((prev) => ({ ...prev, [elementId]: value }))
@@ -299,7 +316,7 @@ export default function PreviewPage() {
           {isSubmitted ? (
             <div className="w-full h-full flex items-center justify-center p-8">
               <SubmittedState onBack={goBackToBuilder} onReset={() => {
-                setCurrentPageIndex(0)
+                dispatch(setCurrentPage(0))
                 setResponses({})
                 setIsSubmitted(false)
               }} />
