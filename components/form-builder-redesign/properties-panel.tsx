@@ -8,29 +8,12 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
-import type { FormElement, FormPage, FormData, FormSection } from "@/types/form"
+import type { FormElement, FormPage, FormData, FormSection, ButtonStyle } from "@/types/form"
 import {
-    X,
-    Settings2,
-    Palette,
-    Layout,
-    Plus,
-    Trash2,
-    GripVertical,
-    AlignLeft,
-    AlignCenter,
-    AlignRight,
-    ChevronLeft,
-    ChevronRight,
-    ChevronDown,
-    LayoutTemplate,
-    Type,
-    Layers,
-    Image as ImageIcon,
-    Columns,
-    Monitor,
-    Smartphone,
-    Move,
+    Settings2, Layout, Plus, Trash2, GripVertical, ChevronLeft, ChevronRight, LayoutTemplate,
+    Type, Layers, Columns, Square, Paintbrush, Box, MousePointer2, Sparkles, Palette,
+    AlignLeft, AlignCenter, AlignRight, Move, Image as ImageIcon, Monitor, Smartphone,
+    CheckCircle2
 } from "lucide-react"
 
 interface PropertiesPanelProps {
@@ -48,803 +31,639 @@ interface PropertiesPanelProps {
     onUpdateFormSettings: (updates: Partial<FormData["settings"]>) => void
 }
 
+const defaultButtonStyle: ButtonStyle = {
+    paddingX: 24, paddingY: 12, fontSize: 14, fontWeight: "semibold",
+    backgroundColor: "#0f172a", textColor: "#ffffff", borderColor: "#0f172a",
+    borderWidth: 0, borderRadius: 8,
+    shadow: { enabled: true, x: 0, y: 2, blur: 8, spread: 0, color: "rgba(0,0,0,0.12)" },
+    preset: "default"
+}
+
+const buttonPresets: { name: string; id: ButtonStyle['preset']; style: Partial<ButtonStyle> }[] = [
+    { name: "Default", id: "default", style: { backgroundColor: "#0f172a", textColor: "#fff", borderRadius: 8, borderWidth: 0, fontWeight: "semibold", shadow: { enabled: true, x: 0, y: 2, blur: 8, spread: 0, color: "rgba(0,0,0,0.12)" } } },
+    { name: "Rounded", id: "rounded", style: { backgroundColor: "#6366f1", textColor: "#fff", borderRadius: 12, borderWidth: 0, fontWeight: "medium", shadow: { enabled: true, x: 0, y: 3, blur: 12, spread: 0, color: "rgba(99,102,241,0.3)" } } },
+    { name: "Pill", id: "pill", style: { backgroundColor: "#ec4899", textColor: "#fff", borderRadius: 999, borderWidth: 0, fontWeight: "semibold", shadow: { enabled: true, x: 0, y: 3, blur: 12, spread: 0, color: "rgba(236,72,153,0.3)" } } },
+    { name: "Outline", id: "outline", style: { backgroundColor: "transparent", textColor: "#0f172a", borderRadius: 8, borderWidth: 2, borderColor: "#0f172a", fontWeight: "medium", shadow: { enabled: false, x: 0, y: 0, blur: 0, spread: 0, color: "transparent" } } },
+    { name: "Gradient", id: "gradient", style: { backgroundColor: "#8b5cf6", textColor: "#fff", borderRadius: 10, borderWidth: 0, fontWeight: "semibold", shadow: { enabled: true, x: 0, y: 4, blur: 16, spread: 0, color: "rgba(139,92,246,0.4)" } } },
+    { name: "Minimal", id: "minimal", style: { backgroundColor: "#f1f5f9", textColor: "#0f172a", borderRadius: 6, borderWidth: 0, fontWeight: "medium", shadow: { enabled: false, x: 0, y: 0, blur: 0, spread: 0, color: "transparent" } } },
+]
+
+// Background color presets
+const colorPresets = [
+    "#ffffff", "#f8fafc", "#f1f5f9", "#fafaf9",
+    "#fff1f2", "#fdf2f8", "#fdf4ff", "#faf5ff", "#f5f3ff", "#eef2ff",
+    "#eff6ff", "#ecfeff", "#f0fdfa", "#ecfdf5", "#f0fdf4", "#f7fee7",
+    "#fefce8", "#fffbeb", "#fff7ed", "#fef2f2",
+    "#0f172a", "#1f2937", "#1e3a5f", "#2e1065",
+]
+
+// Gradient Presets
+const gradientPresets = [
+    { name: "Sunset", colors: ["#ff7e5f", "#feb47b"], angle: 135 },
+    { name: "Ocean", colors: ["#2193b0", "#6dd5ed"], angle: 135 },
+    { name: "Purple", colors: ["#8e2de2", "#4a00e0"], angle: 135 },
+    { name: "Pink", colors: ["#ee9ca7", "#ffdde1"], angle: 135 },
+    { name: "Forest", colors: ["#11998e", "#38ef7d"], angle: 135 },
+    { name: "Midnight", colors: ["#232526", "#414345"], angle: 180 },
+    { name: "Sky", colors: ["#89f7fe", "#66a6ff"], angle: 135 },
+    { name: "Peachy", colors: ["#ffecd2", "#fcb69f"], angle: 135 },
+    { name: "Lavender", colors: ["#e0c3fc", "#8ec5fc"], angle: 135 },
+]
+
+// Mesh gradient presets
+const meshPresets = [
+    { name: "Candy", baseColor: "#fdf2f8" },
+    { name: "Ocean", baseColor: "#ecfeff" },
+    { name: "Sunset", baseColor: "#fff7ed" },
+    { name: "Forest", baseColor: "#f0fdf4" },
+    { name: "Lavender", baseColor: "#faf5ff" },
+    { name: "Fire", baseColor: "#fef2f2" },
+]
+
 export function PropertiesPanel({
-    isOpen,
-    onToggle,
-    selectedElement,
-    formElement,
-    onUpdateElement,
-    currentPage,
-    onUpdatePage,
-    formSection,
-    onUpdateSection,
-    formData,
-    onUpdateForm,
-    onUpdateFormSettings,
+    isOpen, onToggle, selectedElement, formElement, onUpdateElement,
+    currentPage, onUpdatePage, formSection, onUpdateSection, formData, onUpdateForm, onUpdateFormSettings,
 }: PropertiesPanelProps) {
     const [activeSection, setActiveSection] = useState<"content" | "style" | "settings">("content")
 
+    const isButtonsSelected = selectedElement === "__buttons__"
+    const isBackgroundSelected = selectedElement === "__background__"
+
+    // Helpers
+    const buttonStyle: ButtonStyle = {
+        ...defaultButtonStyle, ...(currentPage.layout.buttonStyle || {}),
+        backgroundColor: currentPage.layout.buttonStyle?.backgroundColor || currentPage.layout.buttonColor || defaultButtonStyle.backgroundColor,
+        textColor: currentPage.layout.buttonStyle?.textColor || currentPage.layout.buttonTextColor || defaultButtonStyle.textColor,
+    }
+
+    const updateButtonStyle = (updates: Partial<ButtonStyle>) => {
+        onUpdatePage({
+            layout: {
+                ...currentPage.layout, buttonStyle: { ...buttonStyle, ...updates },
+                buttonColor: updates.backgroundColor || buttonStyle.backgroundColor,
+                buttonTextColor: updates.textColor || buttonStyle.textColor,
+            }
+        })
+    }
+    const applyPreset = (preset: typeof buttonPresets[0]) => updateButtonStyle({ ...preset.style, preset: preset.id })
+    const applyGradientPreset = (preset: typeof gradientPresets[0]) => {
+        onUpdatePage({ layout: { ...currentPage.layout, backgroundType: 'gradient', canvasGradient: { enabled: true, type: 'linear', colors: preset.colors, angle: preset.angle } } })
+    }
     const updateSectionLayout = (updates: any) => {
         if (!formSection) return
-        onUpdateSection(formSection.id, {
-            layout: { ...formSection.layout, ...updates }
-        })
+        onUpdateSection(formSection.id, { layout: { ...formSection.layout, ...updates } })
     }
 
-    const addOption = () => {
-        if (!formElement) return
-        const newOptions = [...(formElement.options || []), `Option ${(formElement.options?.length || 0) + 1}`]
-        onUpdateElement(formElement.id, { options: newOptions })
+    // Option Management
+    const addOption = () => { if (formElement) onUpdateElement(formElement.id, { options: [...(formElement.options || []), `Option ${(formElement.options?.length || 0) + 1}`] }) }
+    const updateOption = (i: number, v: string) => { if (formElement) { const o = [...(formElement.options || [])]; o[i] = v; onUpdateElement(formElement.id, { options: o }) } }
+    const removeOption = (i: number) => { if (formElement) onUpdateElement(formElement.id, { options: formElement.options?.filter((_, idx) => idx !== i) || [] }) }
+
+    // Selection Logic
+    const getSelectionContext = () => {
+        if (isBackgroundSelected) return 'background'
+        if (isButtonsSelected) return 'buttons'
+        if (formElement) return 'element'
+        if (formSection) return 'section'
+        return 'formcard'
+    }
+    const selectionContext = getSelectionContext()
+
+    const getSelectionName = () => {
+        if (isBackgroundSelected) return 'Background'
+        if (isButtonsSelected) return 'Buttons'
+        if (formElement) return formElement.type.charAt(0).toUpperCase() + formElement.type.slice(1)
+        if (formSection) return formSection.type === 'input-zone' ? 'Section' : 'Container'
+        return 'Form Card'
     }
 
-    const updateOption = (index: number, value: string) => {
-        if (!formElement) return
-        const newOptions = [...(formElement.options || [])]
-        newOptions[index] = value
-        onUpdateElement(formElement.id, { options: newOptions })
+    const getSelectionIcon = () => {
+        if (isBackgroundSelected) return <Palette className="h-3 w-3 text-pink-600" />
+        if (isButtonsSelected) return <MousePointer2 className="h-3 w-3 text-violet-600" />
+        if (formSection) return <Layout className="h-3 w-3 text-emerald-600" />
+        return <Square className="h-3 w-3 text-emerald-600" />
     }
 
-    const removeOption = (index: number) => {
-        if (!formElement) return
-        const newOptions = formElement.options?.filter((_, i) => i !== index) || []
-        onUpdateElement(formElement.id, { options: newOptions })
+    const getSelectionBgColor = () => {
+        if (isBackgroundSelected) return 'bg-pink-100'
+        if (isButtonsSelected) return 'bg-violet-100'
+        return 'bg-emerald-100'
     }
-
-    const updateFormSettings = (updates: Partial<FormData["settings"]>) => {
-        onUpdateForm({
-            ...formData,
-            settings: { ...formData.settings, ...updates },
-        })
-    }
-
-    const colorPresets = [
-        { name: "Violet", value: "#8b5cf6", gradient: "from-violet-500 to-purple-500" },
-        { name: "Blue", value: "#3b82f6", gradient: "from-blue-500 to-cyan-500" },
-        { name: "Emerald", value: "#10b981", gradient: "from-emerald-500 to-teal-500" },
-        { name: "Orange", value: "#f97316", gradient: "from-orange-500 to-amber-500" },
-        { name: "Rose", value: "#f43f5e", gradient: "from-rose-500 to-pink-500" },
-        { name: "Slate", value: "#64748b", gradient: "from-slate-500 to-gray-500" },
-    ]
 
     return (
         <>
-            {/* Collapsed State Toggle */}
             {!isOpen && (
-                <button
-                    onClick={onToggle}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-6 h-16 bg-white border border-r-0 border-slate-200 rounded-l-lg shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors"
-                >
-                    <ChevronLeft className="h-4 w-4 text-slate-400" />
+                <button onClick={onToggle} className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-5 h-12 bg-white border border-r-0 border-slate-200 rounded-l-md shadow-sm flex items-center justify-center hover:bg-slate-50">
+                    <ChevronLeft className="h-3 w-3 text-slate-400" />
                 </button>
             )}
 
-            {/* Panel */}
-            <div
-                className={`bg-white border-l border-slate-200 flex-shrink-0 flex flex-col transition-all duration-300 ${isOpen ? "w-80" : "w-0 overflow-hidden"
-                    }`}
-            >
+            <div className={`bg-white border-l border-slate-200 flex-shrink-0 flex flex-col transition-all duration-200 ${isOpen ? "w-80" : "w-0 overflow-hidden"}`}>
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-md bg-slate-100">
-                            <Settings2 className="h-4 w-4 text-slate-600" />
-                        </div>
-                        <span className="text-sm font-semibold text-slate-900">
-                            {selectedElement ? (formSection ? "Section" : "Element") : "Page"} Properties
-                        </span>
+                <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100">
+                    <div className="flex items-center gap-1.5">
+                        <div className={`p-1 rounded ${getSelectionBgColor()}`}>{getSelectionIcon()}</div>
+                        <span className="text-xs font-semibold text-slate-800">{getSelectionName()}</span>
                     </div>
-                    <button
-                        onClick={onToggle}
-                        className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </button>
+                    <button onClick={onToggle} className="p-0.5 rounded hover:bg-slate-100 text-slate-400"><ChevronRight className="h-3 w-3" /></button>
                 </div>
 
-                {/* Section Tabs */}
-                <div className="flex items-center gap-1 p-2 border-b border-slate-100">
-                    {(["content", "style", "settings"] as const).map((section) => (
-                        <button
-                            key={section}
-                            onClick={() => setActiveSection(section)}
-                            className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all ${activeSection === section
-                                ? "bg-slate-900 text-white"
-                                : "text-slate-600 hover:bg-slate-100"
-                                }`}
-                        >
-                            {section.charAt(0).toUpperCase() + section.slice(1)}
+                {/* Tabs */}
+                <div className="flex items-center gap-0.5 p-1.5 border-b border-slate-100">
+                    {(["content", "style", "settings"] as const).map((s) => (
+                        <button key={s} onClick={() => setActiveSection(s)}
+                            className={`flex-1 px-2 py-1 text-[10px] font-medium rounded transition-all ${activeSection === s ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-100"}`}>
+                            {s.charAt(0).toUpperCase() + s.slice(1)}
                         </button>
                     ))}
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-4">
+                <div className="flex-1 overflow-y-auto p-4 space-y-6">
+
+                    {/* ========== CONTENT TAB ========== */}
                     {activeSection === "content" && (
-                        <div className="space-y-6">
-                            {selectedElement && formElement ? (
-                                <>
-                                    {/* Element Type Badge */}
-                                    <div className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-lg">
+                        <>
+                            {isBackgroundSelected && (
+                                <div className="space-y-3">
+                                    <div className="p-3 bg-pink-50 rounded-lg border border-pink-100">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Palette className="h-4 w-4 text-pink-600" />
+                                            <span className="text-xs font-semibold text-pink-800">Page Background</span>
+                                        </div>
+                                        <p className="text-[11px] text-pink-700/80 leading-relaxed">
+                                            You selected the full-page background. This is what users see behind your form.
+                                            <br /><br />
+                                            <span className="font-medium">Go to Style tab</span> to choose colors, gradients, mesh effects, or images.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {isButtonsSelected && (
+                                <div className="space-y-3">
+                                    <div className="p-3 bg-violet-50 rounded-lg border border-violet-100">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <MousePointer2 className="h-4 w-4 text-violet-600" />
+                                            <span className="text-xs font-semibold text-violet-800">Navigation Buttons</span>
+                                        </div>
+                                        <p className="text-[11px] text-violet-700/80 leading-relaxed">
+                                            These buttons appear at the bottom of your form (Next, Back, Submit).
+                                            <br /><br />
+                                            <span className="font-medium">Go to Style tab</span> to customize their appearance.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ELEMENT CONTENT */}
+                            {selectedElement && formElement && !isBackgroundSelected && !isButtonsSelected && (
+                                <div className="space-y-5">
+                                    <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
                                         <Type className="h-4 w-4 text-slate-500" />
-                                        <span className="text-xs font-medium text-slate-600 capitalize">{formElement.type}</span>
+                                        <span className="text-xs font-medium text-slate-700 capitalize">{formElement.type}</span>
                                     </div>
 
-                                    {/* Label/Question */}
                                     <div className="space-y-2">
-                                        <Label className="text-xs font-medium text-slate-700">
-                                            {formElement.type === "heading" ? "Heading Text" :
-                                                formElement.type === "paragraph" ? "Paragraph Text" : "Question"}
-                                        </Label>
-                                        <Textarea
-                                            value={formElement.label}
-                                            onChange={(e) => onUpdateElement(formElement.id, { label: e.target.value })}
-                                            className="min-h-[80px] text-sm resize-none border-slate-200 focus:border-violet-500 focus:ring-violet-500/20"
-                                            placeholder="Enter text..."
-                                        />
+                                        <Label className="text-xs font-medium text-slate-700">{formElement.type === "heading" ? "Heading Text" : formElement.type === "paragraph" ? "Text Content" : "Question Text"}</Label>
+                                        <Textarea value={formElement.label} onChange={(e) => onUpdateElement(formElement.id, { label: e.target.value })}
+                                            className="min-h-[80px] text-sm resize-none border-slate-200 focus:border-violet-500 transition-colors" placeholder="Enter text..." />
                                     </div>
 
-                                    {/* Description/Placeholder */}
                                     {!["heading", "paragraph", "image"].includes(formElement.type) && (
                                         <div className="space-y-2">
-                                            <Label className="text-xs font-medium text-slate-700">Help Text</Label>
-                                            <Input
-                                                value={formElement.placeholder || ""}
-                                                onChange={(e) => onUpdateElement(formElement.id, { placeholder: e.target.value })}
-                                                className="h-9 text-sm border-slate-200 focus:border-violet-500"
-                                                placeholder="Add helper text..."
-                                            />
+                                            <Label className="text-xs font-medium text-slate-700">Help Text / Placeholder</Label>
+                                            <Input value={formElement.placeholder || ""} onChange={(e) => onUpdateElement(formElement.id, { placeholder: e.target.value })}
+                                                className="h-9 text-xs border-slate-200 focus:border-violet-500" placeholder="Type clarification text..." />
                                         </div>
                                     )}
 
-                                    {/* Required Toggle */}
                                     {!["heading", "paragraph", "image", "start-button", "submit-button"].includes(formElement.type) && (
-                                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                                        <div className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-lg shadow-sm">
                                             <div>
-                                                <Label className="text-sm font-medium text-slate-700">Required</Label>
-                                                <p className="text-xs text-slate-500">User must answer</p>
+                                                <Label className="text-xs font-medium text-slate-700">Required Field</Label>
+                                                <p className="text-[10px] text-slate-400">User cannot skip this</p>
                                             </div>
-                                            <Switch
-                                                checked={formElement.required}
-                                                onCheckedChange={(checked) => onUpdateElement(formElement.id, { required: checked })}
-                                            />
+                                            <Switch checked={formElement.required} onCheckedChange={(c) => onUpdateElement(formElement.id, { required: c })} />
                                         </div>
                                     )}
 
-                                    {/* Options for Choice Types */}
+                                    {/* Choices Management */}
                                     {["select", "radio", "checkbox"].includes(formElement.type) && (
-                                        <div className="space-y-3">
+                                        <div className="space-y-3 pt-2 border-t border-slate-100">
                                             <div className="flex items-center justify-between">
                                                 <Label className="text-xs font-medium text-slate-700">Choices</Label>
-                                                <span className="text-xs text-slate-400">{formElement.options?.length || 0}</span>
+                                                <span className="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded-full">{formElement.options?.length || 0}</span>
                                             </div>
                                             <div className="space-y-2">
-                                                {formElement.options?.map((option, index) => (
-                                                    <div key={index} className="flex items-center gap-2 group">
+                                                {formElement.options?.map((opt, i) => (
+                                                    <div key={i} className="flex items-center gap-2 group">
                                                         <GripVertical className="h-4 w-4 text-slate-300 opacity-0 group-hover:opacity-100 cursor-grab" />
-                                                        <Input
-                                                            value={option}
-                                                            onChange={(e) => updateOption(index, e.target.value)}
-                                                            className="h-8 text-sm flex-1 border-slate-200"
-                                                            placeholder={`Option ${index + 1}`}
-                                                        />
-                                                        <button
-                                                            onClick={() => removeOption(index)}
-                                                            className="p-1 rounded text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
-                                                            disabled={(formElement.options?.length || 0) <= 1}
-                                                        >
+                                                        <Input value={opt} onChange={(e) => updateOption(i, e.target.value)} className="h-8 text-xs flex-1 border-slate-200" />
+                                                        <button onClick={() => removeOption(i)} className="p-1 rounded text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all" disabled={(formElement.options?.length || 0) <= 1}>
                                                             <Trash2 className="h-3.5 w-3.5" />
                                                         </button>
                                                     </div>
                                                 ))}
-                                                <Button
-                                                    onClick={addOption}
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="w-full h-8 text-xs border-dashed border-slate-300 text-slate-500 hover:text-violet-600 hover:border-violet-400"
-                                                >
-                                                    <Plus className="h-3.5 w-3.5 mr-1" />
-                                                    Add Choice
+                                                <Button onClick={addOption} variant="outline" size="sm" className="w-full h-8 text-xs border-dashed text-slate-500 hover:text-violet-600 hover:border-violet-300 hover:bg-violet-50">
+                                                    <Plus className="h-3 w-3 mr-1.5" /> Add Choice
                                                 </Button>
                                             </div>
                                         </div>
                                     )}
 
-                                    {/* Image Position */}
+                                    {/* Image Position Controls */}
                                     {formElement.type === "image" && (
                                         <div className="space-y-2">
                                             <Label className="text-xs font-medium text-slate-700">Alignment</Label>
-                                            <div className="flex gap-1">
-                                                {[
-                                                    { value: "left", icon: AlignLeft },
-                                                    { value: "center", icon: AlignCenter },
-                                                    { value: "right", icon: AlignRight },
-                                                ].map(({ value, icon: Icon }) => (
-                                                    <Button
-                                                        key={value}
-                                                        variant={formElement.imagePosition === value ? "default" : "outline"}
-                                                        size="sm"
-                                                        onClick={() => onUpdateElement(formElement.id, { imagePosition: value as "left" | "center" | "right" })}
-                                                        className={`flex-1 h-8 ${formElement.imagePosition === value
-                                                            ? "bg-slate-900 text-white"
-                                                            : "border-slate-200"
-                                                            }`}
-                                                    >
+                                            <div className="flex bg-slate-100 p-1 rounded-lg">
+                                                {[{ v: 'left', i: AlignLeft }, { v: 'center', i: AlignCenter }, { v: 'right', i: AlignRight }].map(({ v, i: Icon }) => (
+                                                    <button key={v} onClick={() => onUpdateElement(formElement.id, { imagePosition: v as any })}
+                                                        className={`flex-1 py-1.5 flex justify-center rounded-md transition-all ${formElement.imagePosition === v ? 'bg-white shadow text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}>
                                                         <Icon className="h-4 w-4" />
-                                                    </Button>
+                                                    </button>
                                                 ))}
                                             </div>
                                         </div>
                                     )}
-                                </>
-                            ) : formSection ? (
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-2 p-2.5 bg-emerald-50 rounded-lg">
-                                        <Layout className="h-4 w-4 text-emerald-600" />
-                                        <span className="text-xs font-medium text-emerald-700">Section Properties</span>
-                                    </div>
+                                </div>
+                            )}
 
+                            {/* SECTION CONTENT */}
+                            {formSection && !isBackgroundSelected && !isButtonsSelected && (
+                                <div className="space-y-5">
+                                    <div className="flex items-center gap-2 p-2 bg-emerald-50 rounded-lg border border-emerald-100">
+                                        <Layout className="h-4 w-4 text-emerald-600" />
+                                        <span className="text-xs font-medium text-emerald-700">{formSection.type === 'input-zone' ? 'Input Section' : 'Container'} Properties</span>
+                                    </div>
                                     <div className="space-y-2">
                                         <Label className="text-xs font-medium text-slate-700">Section Title</Label>
-                                        <Input
-                                            value={formSection.title || ""}
-                                            onChange={(e) => onUpdateSection(formSection.id, { title: e.target.value })}
-                                            className="h-9 text-sm border-slate-200"
-                                            placeholder="Enter section title..."
-                                        />
+                                        <Input value={formSection.title || ""} onChange={(e) => onUpdateSection(formSection.id, { title: e.target.value })} className="h-9 text-xs border-slate-200" placeholder="Optional title..." />
                                     </div>
 
-                                    <div className="space-y-4 pt-2 border-t border-slate-100">
+                                    <div className="space-y-4 pt-3 border-t border-slate-100">
                                         <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Layout</Label>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-500">Direction</Label>
-                                                <Select
-                                                    value={formSection.layout.direction}
-                                                    onValueChange={(val: any) => updateSectionLayout({ direction: val })}
-                                                >
-                                                    <SelectTrigger className="h-8 text-xs">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[10px] text-slate-500">Direction</Label>
+                                                <Select value={formSection.layout.direction} onValueChange={(val: any) => updateSectionLayout({ direction: val })}>
+                                                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="column">Column</SelectItem>
-                                                        <SelectItem value="row">Row</SelectItem>
+                                                        <SelectItem value="column">Column (Stack)</SelectItem>
+                                                        <SelectItem value="row">Row (Side-by-side)</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-500">Gap (px)</Label>
-                                                <Input
-                                                    type="number"
-                                                    value={formSection.layout.gap}
-                                                    onChange={(e) => updateSectionLayout({ gap: parseInt(e.target.value) })}
-                                                    className="h-8 text-xs"
-                                                />
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[10px] text-slate-500">Gap (px)</Label>
+                                                <Input type="number" value={formSection.layout.gap} onChange={(e) => updateSectionLayout({ gap: parseInt(e.target.value) })} className="h-8 text-xs" />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            ) : (
-                                <>
-                                    {/* Page Settings */}
-                                    <div className="flex items-center gap-2 p-2.5 bg-violet-50 rounded-lg">
-                                        <LayoutTemplate className="h-4 w-4 text-violet-600" />
-                                        <span className="text-xs font-medium text-violet-700">Page Properties</span>
-                                    </div>
+                            )}
 
+                            {/* PAGE CONTENT (Form Card) */}
+                            {selectionContext === 'formcard' && (
+                                <div className="space-y-5">
+                                    <div className="flex items-center gap-2 p-2 bg-emerald-50 rounded-lg border border-emerald-100">
+                                        <LayoutTemplate className="h-4 w-4 text-emerald-600" />
+                                        <span className="text-xs font-medium text-emerald-700">Page Properties</span>
+                                    </div>
                                     <div className="space-y-2">
                                         <Label className="text-xs font-medium text-slate-700">Page Title</Label>
-                                        <Input
-                                            value={currentPage.title}
-                                            onChange={(e) => onUpdatePage({ title: e.target.value })}
-                                            className="h-9 text-sm border-slate-200 focus:border-violet-500"
-                                        />
+                                        <Input value={currentPage.title} onChange={(e) => onUpdatePage({ title: e.target.value })} className="h-9 text-xs border-slate-200" />
                                     </div>
-
                                     <div className="space-y-2">
                                         <Label className="text-xs font-medium text-slate-700">Page Type</Label>
-                                        <Select
-                                            value={currentPage.type}
-                                            onValueChange={(value: "welcome" | "form" | "ending") => onUpdatePage({ type: value })}
-                                        >
-                                            <SelectTrigger className="h-9 text-sm border-slate-200">
-                                                <SelectValue />
-                                            </SelectTrigger>
+                                        <Select value={currentPage.type} onValueChange={(v: "welcome" | "form" | "ending") => onUpdatePage({ type: v })}>
+                                            <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="welcome">Welcome Screen</SelectItem>
                                                 <SelectItem value="form">Form Page</SelectItem>
-                                                <SelectItem value="ending">Thank You</SelectItem>
+                                                <SelectItem value="ending">Thank You Page</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                </>
+                                </div>
                             )}
-                        </div>
+                        </>
                     )}
 
+                    {/* ========== STYLE TAB ========== */}
                     {activeSection === "style" && (
-                        <div className="space-y-6">
-                            {formSection ? (
+                        <>
+                            {/* BACKGROUND STYLING (My Rich Feature) */}
+                            {selectionContext === 'background' && (
+                                <div className="space-y-5">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Label className="text-xs font-bold uppercase tracking-widest text-pink-500">Global Background</Label>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="text-xs text-slate-600">Background Type</Label>
+                                        <Select value={currentPage.layout.backgroundType || 'color'} onValueChange={(v: any) => onUpdatePage({ layout: { ...currentPage.layout, backgroundType: v } })}>
+                                            <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="color">Solid Color</SelectItem>
+                                                <SelectItem value="gradient">Gradient</SelectItem>
+                                                <SelectItem value="mesh">Mesh Gradient</SelectItem>
+                                                <SelectItem value="dots">Dot Pattern</SelectItem>
+                                                <SelectItem value="image">Image</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    {(!currentPage.layout.backgroundType || currentPage.layout.backgroundType === 'color' || currentPage.layout.backgroundType === 'dots') && (
+                                        <div className="space-y-3">
+                                            <Label className="text-xs text-slate-600">Preset Colors</Label>
+                                            <div className="grid grid-cols-6 gap-2">
+                                                {colorPresets.map((color, i) => (
+                                                    <button key={i} onClick={() => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: color } })}
+                                                        className={`w-full aspect-square rounded-full border transition-all hover:scale-110 ${currentPage.layout.canvasBackground === color ? 'border-pink-500 ring-2 ring-pink-200 scale-110' : 'border-slate-200'}`}
+                                                        style={{ backgroundColor: color }} />
+                                                ))}
+                                            </div>
+                                            <div className="flex gap-2 items-center pt-2">
+                                                <Label className="text-[10px] text-slate-500 w-16">Custom:</Label>
+                                                <div className="flex gap-2 flex-1">
+                                                    <input type="color" value={currentPage.layout.canvasBackground} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: e.target.value } })}
+                                                        className="w-8 h-8 rounded border border-slate-200 cursor-pointer" />
+                                                    <Input value={currentPage.layout.canvasBackground} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: e.target.value } })}
+                                                        className="h-8 text-xs font-mono flex-1" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {currentPage.layout.backgroundType === 'gradient' && (
+                                        <div className="space-y-3">
+                                            <Label className="text-xs text-slate-600">Gradient Presets</Label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {gradientPresets.map((preset, i) => (
+                                                    <button key={i} onClick={() => applyGradientPreset(preset)}
+                                                        className="w-full h-10 rounded-md border border-slate-200 hover:border-pink-500 transition-all text-[9px] font-medium text-white shadow-sm flex items-center justify-center"
+                                                        style={{ background: `linear-gradient(${preset.angle}deg, ${preset.colors.join(', ')})` }}>
+                                                        {preset.name}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <div className="space-y-2 pt-2">
+                                                <Label className="text-xs text-slate-500">Angle ({currentPage.layout.canvasGradient?.angle || 135}°)</Label>
+                                                <Slider value={[currentPage.layout.canvasGradient?.angle || 135]} min={0} max={360} step={15}
+                                                    onValueChange={([v]) => onUpdatePage({ layout: { ...currentPage.layout, canvasGradient: { ...(currentPage.layout.canvasGradient || { enabled: true, type: 'linear', colors: ['#ff7e5f', '#feb47b'] }), angle: v } } })} />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {currentPage.layout.backgroundType === 'mesh' && (
+                                        <div className="space-y-3">
+                                            <Label className="text-xs text-slate-600">Mesh Gradients</Label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {meshPresets.map((preset, i) => (
+                                                    <button key={i} onClick={() => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: preset.baseColor } })}
+                                                        className="w-full h-12 rounded-lg border border-slate-200 hover:border-pink-500 transition-all text-[9px] font-medium text-slate-700 flex items-center justify-center relative overflow-hidden"
+                                                    >
+                                                        <div className="absolute inset-0 opacity-50" style={{
+                                                            background: `linear-gradient(135deg, ${preset.baseColor} 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(200,200,255,0.5) 0%, transparent 50%)`
+                                                        }} />
+                                                        <span className="relative z-10 bg-white/60 px-2 py-0.5 rounded-full">{preset.name}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {currentPage.layout.backgroundType === 'image' && (
+                                        <div className="space-y-3">
+                                            <Label className="text-xs text-slate-600">Background Image</Label>
+                                            <Input value={currentPage.layout.backgroundImage || ''} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, backgroundImage: e.target.value } })}
+                                                className="h-9 text-xs" placeholder="https://example.com/image.jpg" />
+                                            {currentPage.layout.backgroundImage && (
+                                                <div className="aspect-video w-full rounded-lg border border-slate-200 overflow-hidden bg-slate-50 relative">
+                                                    <img src={currentPage.layout.backgroundImage} alt="Preview" className="w-full h-full object-cover" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* BUTTON STYLING */}
+                            {selectionContext === 'buttons' && (
+                                <div className="space-y-5">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Label className="text-xs font-bold uppercase tracking-widest text-violet-500">Button Appearance</Label>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label className="text-xs text-slate-600">Style Presets</Label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {buttonPresets.map(p => (
+                                                <button key={p.id} onClick={() => applyPreset(p)}
+                                                    className={`p-2 rounded-lg border text-[10px] font-medium transition-all flex flex-col items-center gap-1.5 ${buttonStyle.preset === p.id ? 'border-violet-500 bg-violet-50 text-violet-700' : 'border-slate-200 hover:border-slate-300'}`}>
+                                                    <div className="w-full h-3 rounded-full opacity-60" style={{ backgroundColor: p.style.backgroundColor || '#0f172a' }} />
+                                                    {p.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                                        <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Customization</Label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label className="text-[10px] text-slate-500">Padding</Label>
+                                                <Slider value={[buttonStyle.paddingX]} min={8} max={60} step={2} onValueChange={([v]) => updateButtonStyle({ paddingX: v })} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-[10px] text-slate-500">Radius</Label>
+                                                <Slider value={[buttonStyle.borderRadius]} min={0} max={30} step={1} onValueChange={([v]) => updateButtonStyle({ borderRadius: v })} />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] text-slate-500">Colors</Label>
+                                            <div className="flex gap-4">
+                                                <div className="space-y-1 flex-1">
+                                                    <span className="text-[9px] text-slate-400 block mb-1">Background</span>
+                                                    <div className="flex gap-2"><input type="color" value={buttonStyle.backgroundColor} onChange={(e) => updateButtonStyle({ backgroundColor: e.target.value })} className="w-8 h-8 rounded border" /><Input value={buttonStyle.backgroundColor} className="h-8 text-[10px]" /></div>
+                                                </div>
+                                                <div className="space-y-1 flex-1">
+                                                    <span className="text-[9px] text-slate-400 block mb-1">Text</span>
+                                                    <div className="flex gap-2"><input type="color" value={buttonStyle.textColor} onChange={(e) => updateButtonStyle({ textColor: e.target.value })} className="w-8 h-8 rounded border" /><Input value={buttonStyle.textColor} className="h-8 text-[10px]" /></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* SECTION STYLING (User's rich features) */}
+                            {selectionContext === 'section' && formSection && (
                                 <div className="space-y-6">
-                                    {/* Section Styling (Already existing logic) */}
                                     <div className="space-y-4">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Section Appearance</Label>
+                                        <Label className="text-xs font-bold uppercase tracking-widest text-emerald-500">Visuals</Label>
 
                                         <div className="space-y-2">
                                             <Label className="text-xs text-slate-600">Background Color</Label>
                                             <div className="flex gap-2">
-                                                <input
-                                                    type="color"
-                                                    value={formSection.layout.backgroundColor}
-                                                    onChange={(e) => updateSectionLayout({ backgroundColor: e.target.value })}
-                                                    className="w-8 h-8 rounded border border-slate-200"
-                                                />
-                                                <Input
-                                                    value={formSection.layout.backgroundColor}
-                                                    onChange={(e) => updateSectionLayout({ backgroundColor: e.target.value })}
-                                                    className="h-8 text-xs font-mono"
-                                                />
+                                                <input type="color" value={formSection.layout.backgroundColor} onChange={(e) => updateSectionLayout({ backgroundColor: e.target.value })} className="w-9 h-9 rounded-lg border border-slate-200" />
+                                                <Input value={formSection.layout.backgroundColor} onChange={(e) => updateSectionLayout({ backgroundColor: e.target.value })} className="flex-1 h-9 text-xs font-mono" />
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-600">Radius</Label>
-                                                <Slider
-                                                    value={[formSection.layout.borderRadius]}
-                                                    min={0} max={50} step={1}
-                                                    onValueChange={([val]) => updateSectionLayout({ borderRadius: val })}
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-600">Border</Label>
-                                                <Slider
-                                                    value={[formSection.layout.borderWidth]}
-                                                    min={0} max={10} step={1}
-                                                    onValueChange={([val]) => updateSectionLayout({ borderWidth: val })}
-                                                />
-                                            </div>
+                                            <div className="space-y-2"><Label className="text-xs text-slate-500">Radius ({formSection.layout.borderRadius}px)</Label><Slider value={[formSection.layout.borderRadius]} min={0} max={32} step={1} onValueChange={([v]) => updateSectionLayout({ borderRadius: v })} /></div>
+                                            <div className="space-y-2"><Label className="text-xs text-slate-500">Border ({formSection.layout.borderWidth}px)</Label><Slider value={[formSection.layout.borderWidth]} min={0} max={8} step={1} onValueChange={([v]) => updateSectionLayout({ borderWidth: v })} /></div>
                                         </div>
                                     </div>
 
-                                    {/* Padding Controls */}
                                     <div className="space-y-4 pt-4 border-t border-slate-100">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Padding</Label>
-                                        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                                        <Label className="text-xs font-bold uppercase tracking-widest text-slate-400">Padding</Label>
+                                        <div className="grid grid-cols-2 gap-3">
                                             {(['top', 'bottom', 'left', 'right'] as const).map(side => (
                                                 <div key={side} className="space-y-1">
                                                     <Label className="text-[10px] text-slate-500 capitalize">{side}</Label>
-                                                    <Input
-                                                        type="number"
-                                                        value={formSection.layout.padding[side]}
-                                                        onChange={(e) => updateSectionLayout({
-                                                            padding: { ...formSection.layout.padding, [side]: parseInt(e.target.value) }
-                                                        })}
-                                                        className="h-8 text-xs"
-                                                    />
+                                                    <Input type="number" value={formSection.layout.padding[side]} onChange={(e) => updateSectionLayout({ padding: { ...formSection.layout.padding, [side]: parseInt(e.target.value) } })} className="h-8 text-xs" />
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
 
-                                    {/* Advanced Effects: Shadow & Glassmorphism */}
-                                    <div className="space-y-4 pt-4 border-t border-slate-100">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Effects</Label>
-
+                                    <div className="space-y-3 pt-4 border-t border-slate-100">
+                                        <Label className="text-xs font-bold uppercase tracking-widest text-slate-400">Effects</Label>
                                         <div className="flex items-center justify-between">
-                                            <Label className="text-xs text-slate-600">Shadow</Label>
-                                            <Switch
-                                                checked={formSection.layout.shadow?.enabled}
-                                                onCheckedChange={(val) => updateSectionLayout({
-                                                    shadow: { ...(formSection.layout.shadow || { x: 0, y: 4, blur: 20, spread: 0, color: "rgba(0,0,0,0.1)" }), enabled: val }
-                                                })}
-                                            />
+                                            <Label className="text-xs text-slate-600">Drop Shadow</Label>
+                                            <Switch checked={formSection.layout.shadow?.enabled} onCheckedChange={(val) => updateSectionLayout({ shadow: { ...(formSection.layout.shadow || { x: 0, y: 4, blur: 20, spread: 0, color: "rgba(0,0,0,0.1)" }), enabled: val } })} />
                                         </div>
-
                                         <div className="flex items-center justify-between">
                                             <Label className="text-xs text-slate-600">Glassmorphism</Label>
-                                            <Switch
-                                                checked={formSection.layout.glassmorphism?.enabled}
-                                                onCheckedChange={(val) => updateSectionLayout({
-                                                    glassmorphism: { ...(formSection.layout.glassmorphism || { blur: 10, opacity: 0.8 }), enabled: val }
-                                                })}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="space-y-8">
-                                    {/* CANVAS STYLING */}
-                                    <div className="space-y-4">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-violet-500">Canvas (Outer Area)</Label>
-
-                                        {/* Background Type Selector */}
-                                        <div className="space-y-2">
-                                            <Label className="text-xs text-slate-600">Background Style</Label>
-                                            <Select
-                                                value={currentPage.layout.backgroundType || 'color'}
-                                                onValueChange={(val: any) => onUpdatePage({ layout: { ...currentPage.layout, backgroundType: val } })}
-                                            >
-                                                <SelectTrigger className="h-9 text-xs">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="color">Solid Color</SelectItem>
-                                                    <SelectItem value="gradient">Gradient</SelectItem>
-                                                    <SelectItem value="mesh">Mesh Gradient</SelectItem>
-                                                    <SelectItem value="dots">Dot Pattern</SelectItem>
-                                                    <SelectItem value="image">Image</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-
-                                        {/* Color picker for solid/gradient backgrounds */}
-                                        {(!currentPage.layout.backgroundType || currentPage.layout.backgroundType === 'color' || currentPage.layout.backgroundType === 'gradient' || currentPage.layout.backgroundType === 'dots') && (
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-600">Background Color</Label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="color"
-                                                        value={currentPage.layout.canvasBackground}
-                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: e.target.value } })}
-                                                        className="w-10 h-10 rounded-xl border-2 border-slate-100 cursor-pointer"
-                                                    />
-                                                    <Input
-                                                        value={currentPage.layout.canvasBackground}
-                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: e.target.value } })}
-                                                        className="flex-1 h-10 text-xs font-mono border-slate-200 rounded-xl"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Image URL for image background */}
-                                        {currentPage.layout.backgroundType === 'image' && (
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-600">Image URL</Label>
-                                                <Input
-                                                    value={currentPage.layout.backgroundImage || ''}
-                                                    onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, backgroundImage: e.target.value } })}
-                                                    className="h-9 text-xs"
-                                                    placeholder="https://example.com/image.jpg"
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* SPLIT LAYOUT SECTION */}
-                                    <div className="space-y-4 pt-4 border-t border-slate-100">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <Columns className="h-4 w-4 text-pink-500" />
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-900">Split Layout</Label>
-                                            </div>
-                                            <Switch
-                                                checked={currentPage.layout.splitLayout?.enabled || false}
-                                                onCheckedChange={(val) => onUpdatePage({
-                                                    layout: {
-                                                        ...currentPage.layout,
-                                                        splitLayout: {
-                                                            enabled: val,
-                                                            image: currentPage.layout.splitLayout?.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',
-                                                            position: currentPage.layout.splitLayout?.position || 'right',
-                                                            focalPoint: currentPage.layout.splitLayout?.focalPoint || { x: 50, y: 50 },
-                                                            overlay: currentPage.layout.splitLayout?.overlay || { enabled: true, color: '#000000', opacity: 0.2 }
-                                                        }
-                                                    }
-                                                })}
-                                            />
-                                        </div>
-
-                                        {currentPage.layout.splitLayout?.enabled && (
-                                            <div className="space-y-4 pl-2 border-l-2 border-pink-100">
-                                                {/* Image URL */}
-                                                <div className="space-y-2">
-                                                    <Label className="text-xs text-slate-600">Cover Image URL</Label>
-                                                    <Input
-                                                        value={currentPage.layout.splitLayout.image}
-                                                        onChange={(e) => onUpdatePage({
-                                                            layout: {
-                                                                ...currentPage.layout,
-                                                                splitLayout: { ...currentPage.layout.splitLayout!, image: e.target.value }
-                                                            }
-                                                        })}
-                                                        className="h-9 text-xs"
-                                                        placeholder="https://..."
-                                                    />
-                                                </div>
-
-                                                {/* Layout Position */}
-                                                <div className="space-y-2">
-                                                    <Label className="text-xs text-slate-600">Image Position</Label>
-                                                    <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                                                        <button
-                                                            onClick={() => onUpdatePage({
-                                                                layout: {
-                                                                    ...currentPage.layout,
-                                                                    splitLayout: { ...currentPage.layout.splitLayout!, position: 'left' }
-                                                                }
-                                                            })}
-                                                            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${currentPage.layout.splitLayout.position === 'left' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
-                                                        >
-                                                            Left
-                                                        </button>
-                                                        <button
-                                                            onClick={() => onUpdatePage({
-                                                                layout: {
-                                                                    ...currentPage.layout,
-                                                                    splitLayout: { ...currentPage.layout.splitLayout!, position: 'right' }
-                                                                }
-                                                            })}
-                                                            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${currentPage.layout.splitLayout.position === 'right' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
-                                                        >
-                                                            Right
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                {/* Focal Point */}
-                                                <div className="space-y-2">
-                                                    <Label className="text-xs text-slate-600 flex items-center gap-1"><Move className="h-3 w-3" /> Focal Point</Label>
-                                                    <div className="grid grid-cols-2 gap-2">
-                                                        <div className="space-y-1">
-                                                            <Label className="text-[10px] text-slate-400">X: {currentPage.layout.splitLayout.focalPoint?.x || 50}%</Label>
-                                                            <Slider
-                                                                value={[currentPage.layout.splitLayout.focalPoint?.x || 50]}
-                                                                min={0} max={100} step={1}
-                                                                onValueChange={([val]) => onUpdatePage({
-                                                                    layout: {
-                                                                        ...currentPage.layout,
-                                                                        splitLayout: {
-                                                                            ...currentPage.layout.splitLayout!,
-                                                                            focalPoint: { ...currentPage.layout.splitLayout!.focalPoint, x: val }
-                                                                        }
-                                                                    }
-                                                                })}
-                                                            />
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <Label className="text-[10px] text-slate-400">Y: {currentPage.layout.splitLayout.focalPoint?.y || 50}%</Label>
-                                                            <Slider
-                                                                value={[currentPage.layout.splitLayout.focalPoint?.y || 50]}
-                                                                min={0} max={100} step={1}
-                                                                onValueChange={([val]) => onUpdatePage({
-                                                                    layout: {
-                                                                        ...currentPage.layout,
-                                                                        splitLayout: {
-                                                                            ...currentPage.layout.splitLayout!,
-                                                                            focalPoint: { ...currentPage.layout.splitLayout!.focalPoint, y: val }
-                                                                        }
-                                                                    }
-                                                                })}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Overlay */}
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <Label className="text-xs text-slate-600">Overlay</Label>
-                                                        <Switch
-                                                            checked={currentPage.layout.splitLayout.overlay?.enabled}
-                                                            onCheckedChange={(val) => onUpdatePage({
-                                                                layout: {
-                                                                    ...currentPage.layout,
-                                                                    splitLayout: {
-                                                                        ...currentPage.layout.splitLayout!,
-                                                                        overlay: { ...currentPage.layout.splitLayout!.overlay, enabled: val }
-                                                                    }
-                                                                }
-                                                            })}
-                                                        />
-                                                    </div>
-                                                    {currentPage.layout.splitLayout.overlay?.enabled && (
-                                                        <div className="space-y-2">
-                                                            <Label className="text-[10px] text-slate-400">Opacity: {Math.round((currentPage.layout.splitLayout.overlay.opacity || 0) * 100)}%</Label>
-                                                            <Slider
-                                                                value={[(currentPage.layout.splitLayout.overlay.opacity || 0) * 100]}
-                                                                min={0} max={100} step={5}
-                                                                onValueChange={([val]) => onUpdatePage({
-                                                                    layout: {
-                                                                        ...currentPage.layout,
-                                                                        splitLayout: {
-                                                                            ...currentPage.layout.splitLayout!,
-                                                                            overlay: { ...currentPage.layout.splitLayout!.overlay, opacity: val / 100 }
-                                                                        }
-                                                                    }
-                                                                })}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* FORM CARD STYLING */}
-                                    <div className="space-y-4 pt-6 border-t border-slate-100">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Form Card (The Paper)</Label>
-
-                                        <div className="space-y-2">
-                                            <Label className="text-xs text-slate-600">Card Background</Label>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="color"
-                                                    value={currentPage.layout.backgroundColor}
-                                                    onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, backgroundColor: e.target.value } })}
-                                                    className="w-10 h-10 rounded-xl border-2 border-slate-100 cursor-pointer"
-                                                />
-                                                <Input
-                                                    value={currentPage.layout.backgroundColor}
-                                                    onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, backgroundColor: e.target.value } })}
-                                                    className="flex-1 h-10 text-xs font-mono border-slate-200 rounded-xl"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-600">Rounded</Label>
-                                                <Slider
-                                                    value={[currentPage.layout.borderRadius]}
-                                                    min={0} max={64} step={1}
-                                                    onValueChange={([val]) => onUpdatePage({ layout: { ...currentPage.layout, borderRadius: val } })}
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-600">Shadow</Label>
-                                                <Switch
-                                                    checked={currentPage.layout.shadow?.enabled}
-                                                    onCheckedChange={(val) => onUpdatePage({
-                                                        layout: { ...currentPage.layout, shadow: { ...(currentPage.layout.shadow || { x: 0, y: 20, blur: 50, spread: -10, color: "rgba(0,0,0,0.1)" }), enabled: val } }
-                                                    })}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4 pt-4 border-t border-slate-100">
-                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Typography & Buttons</Label>
-
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-600">Global Text Color</Label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="color"
-                                                        value={currentPage.layout.textColor}
-                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, textColor: e.target.value } })}
-                                                        className="w-8 h-8 rounded border border-slate-200"
-                                                    />
-                                                    <Input
-                                                        value={currentPage.layout.textColor}
-                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, textColor: e.target.value } })}
-                                                        className="h-8 text-xs font-mono"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-600">Button Color</Label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="color"
-                                                        value={currentPage.layout.buttonColor}
-                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, buttonColor: e.target.value } })}
-                                                        className="w-8 h-8 rounded border border-slate-200"
-                                                    />
-                                                    <Input
-                                                        value={currentPage.layout.buttonColor}
-                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, buttonColor: e.target.value } })}
-                                                        className="h-8 text-xs font-mono"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label className="text-xs text-slate-600">Button Text Color</Label>
-                                                <div className="flex gap-2">
-                                                    <input
-                                                        type="color"
-                                                        value={currentPage.layout.buttonTextColor}
-                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, buttonTextColor: e.target.value } })}
-                                                        className="w-8 h-8 rounded border border-slate-200"
-                                                    />
-                                                    <Input
-                                                        value={currentPage.layout.buttonTextColor}
-                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, buttonTextColor: e.target.value } })}
-                                                        className="h-8 text-xs font-mono"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label className="text-xs text-slate-700">Page Width</Label>
-                                            <Select
-                                                value={currentPage.layout.maxWidth}
-                                                onValueChange={(val: any) => onUpdatePage({ layout: { ...currentPage.layout, maxWidth: val } })}
-                                            >
-                                                <SelectTrigger className="h-10 text-xs rounded-xl border-slate-200">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="sm">Small (640px)</SelectItem>
-                                                    <SelectItem value="md">Medium (768px)</SelectItem>
-                                                    <SelectItem value="lg">Large (1024px)</SelectItem>
-                                                    <SelectItem value="full">Full width</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <Switch checked={formSection.layout.glassmorphism?.enabled} onCheckedChange={(val) => updateSectionLayout({ glassmorphism: { ...(formSection.layout.glassmorphism || { blur: 10, opacity: 0.8 }), enabled: val } })} />
                                         </div>
                                     </div>
                                 </div>
                             )}
-                        </div>
+
+                            {/* FORM CARD STYLING (Merged rich features) */}
+                            {selectionContext === 'formcard' && (
+                                <div className="space-y-6">
+                                    <div className="space-y-4">
+                                        <Label className="text-xs font-bold uppercase tracking-widest text-emerald-500">Card Design</Label>
+
+                                        <div className="space-y-2">
+                                            <Label className="text-xs text-slate-600">Card Background</Label>
+                                            <div className="flex gap-2">
+                                                <input type="color" value={currentPage.layout.backgroundColor} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, backgroundColor: e.target.value } })} className="w-9 h-9 rounded-lg border border-slate-200" />
+                                                <Input value={currentPage.layout.backgroundColor} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, backgroundColor: e.target.value } })} className="flex-1 h-9 text-xs font-mono" />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2"><Label className="text-xs text-slate-500">Rounded ({currentPage.layout.borderRadius}px)</Label><Slider value={[currentPage.layout.borderRadius]} min={0} max={64} step={1} onValueChange={([v]) => onUpdatePage({ layout: { ...currentPage.layout, borderRadius: v } })} /></div>
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between"><Label className="text-xs text-slate-500">Shadow</Label><Switch checked={currentPage.layout.shadow?.enabled} className="h-4 w-7" onCheckedChange={(v) => onUpdatePage({ layout: { ...currentPage.layout, shadow: { ...(currentPage.layout.shadow || { x: 0, y: 20, blur: 50, spread: -10, color: "rgba(0,0,0,0.1)" }), enabled: v } } })} /></div>
+                                                {currentPage.layout.shadow?.enabled && <Slider value={[currentPage.layout.shadow?.blur || 0]} min={0} max={100} onValueChange={([v]) => onUpdatePage({ layout: { ...currentPage.layout, shadow: { ...currentPage.layout.shadow!, blur: v } } })} />}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* SPLIT LAYOUT (User's better version) */}
+                                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Columns className="h-4 w-4 text-pink-500" />
+                                                <Label className="text-xs font-bold uppercase tracking-widest text-slate-800">Split Layout</Label>
+                                            </div>
+                                            <Switch checked={currentPage.layout.splitLayout?.enabled || false} onCheckedChange={(v) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { enabled: v, image: currentPage.layout.splitLayout?.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564', position: 'right', focalPoint: { x: 50, y: 50 }, overlay: { enabled: true, color: '#000', opacity: 0.2 } } } })} />
+                                        </div>
+
+                                        {currentPage.layout.splitLayout?.enabled && (
+                                            <div className="space-y-4 pl-3 border-l-2 border-pink-100/50">
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs text-slate-600">Cover Image</Label>
+                                                    <Input value={currentPage.layout.splitLayout.image} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, image: e.target.value } } })} className="h-8 text-xs" />
+                                                </div>
+                                                <div className="flex gap-1 p-1 bg-slate-100 rounded-lg">
+                                                    {['left', 'right'].map(pos => (
+                                                        <button key={pos} onClick={() => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, position: pos as 'left' | 'right' } } })}
+                                                            className={`flex-1 py-1.5 text-xs font-medium capitalize rounded-md transition-all ${currentPage.layout.splitLayout!.position === pos ? 'bg-white shadow text-slate-900' : 'text-slate-500'}`}>{pos}</button>
+                                                    ))}
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <Label className="text-xs text-slate-600 flex gap-1 items-center"><Move className="h-3 w-3" /> Focal Point ({currentPage.layout.splitLayout.focalPoint?.x}%, {currentPage.layout.splitLayout.focalPoint?.y}%)</Label>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <Slider value={[currentPage.layout.splitLayout.focalPoint?.x || 50]} min={0} max={100} onValueChange={([x]) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, focalPoint: { ...currentPage.layout.splitLayout!.focalPoint, x } } } })} />
+                                                        <Slider value={[currentPage.layout.splitLayout.focalPoint?.y || 50]} min={0} max={100} onValueChange={([y]) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, focalPoint: { ...currentPage.layout.splitLayout!.focalPoint, y } } } })} />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs text-slate-600 flex justify-between"><span>Overlay Opacity</span><span>{Math.round((currentPage.layout.splitLayout.overlay?.opacity || 0) * 100)}%</span></Label>
+                                                    <Slider value={[(currentPage.layout.splitLayout.overlay?.opacity || 0) * 100]} max={100} onValueChange={([v]) => onUpdatePage({ layout: { ...currentPage.layout, splitLayout: { ...currentPage.layout.splitLayout!, overlay: { ...currentPage.layout.splitLayout!.overlay, opacity: v / 100 } } } })} />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* TYPOGRAPHY & WIDTH */}
+                                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                                        <Label className="text-xs font-bold uppercase tracking-widest text-slate-400">Global Settings</Label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label className="text-xs text-slate-500">Text Color</Label>
+                                                <div className="flex gap-2"><input type="color" value={currentPage.layout.textColor} onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, textColor: e.target.value } })} className="w-8 h-8 rounded border" /><Input value={currentPage.layout.textColor} className="h-8 text-[10px]" /></div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs text-slate-500">Max Width</Label>
+                                                <Select value={currentPage.layout.maxWidth} onValueChange={(val: any) => onUpdatePage({ layout: { ...currentPage.layout, maxWidth: val } })}>
+                                                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="sm">Small (640px)</SelectItem>
+                                                        <SelectItem value="md">Medium (768px)</SelectItem>
+                                                        <SelectItem value="lg">Large (1024px)</SelectItem>
+                                                        <SelectItem value="full">Full Width</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
 
+                    {/* ========== SETTINGS TAB (User's better layout) ========== */}
                     {activeSection === "settings" && (
                         <div className="space-y-6">
-                            {/* Form Behavior */}
                             <div className="space-y-4">
-                                <div className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-lg">
+                                <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
                                     <Layers className="h-4 w-4 text-slate-500" />
                                     <span className="text-xs font-medium text-slate-600">Form Behavior</span>
                                 </div>
-
                                 <div className="space-y-3">
-                                    <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
-                                        <div>
-                                            <Label className="text-sm font-medium text-slate-700">Progress Bar</Label>
-                                            <p className="text-xs text-slate-500">Show completion status</p>
+                                    {[
+                                        { label: "Progress Bar", desc: "Show completion status", default: true },
+                                        { label: "Question Numbers", desc: "Display 1, 2, 3...", default: true },
+                                        { label: "Allow Back Navigation", desc: "Let users review answers", default: true },
+                                        { label: "Auto-save Responses", desc: "Save progress locally", default: false },
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:border-slate-200 transition-all">
+                                            <div><Label className="text-xs font-medium text-slate-700">{item.label}</Label><p className="text-[10px] text-slate-400">{item.desc}</p></div>
+                                            <Switch defaultChecked={item.default} />
                                         </div>
-                                        <Switch defaultChecked />
-                                    </div>
-
-                                    <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
-                                        <div>
-                                            <Label className="text-sm font-medium text-slate-700">Question Numbers</Label>
-                                            <p className="text-xs text-slate-500">Display numbering</p>
-                                        </div>
-                                        <Switch defaultChecked />
-                                    </div>
-
-                                    <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
-                                        <div>
-                                            <Label className="text-sm font-medium text-slate-700">Allow Back Navigation</Label>
-                                            <p className="text-xs text-slate-500">Let users go back</p>
-                                        </div>
-                                        <Switch defaultChecked />
-                                    </div>
-
-                                    <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
-                                        <div>
-                                            <Label className="text-sm font-medium text-slate-700">Auto-save Responses</Label>
-                                            <p className="text-xs text-slate-500">Save partial submissions</p>
-                                        </div>
-                                        <Switch />
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
 
-                            {/* Notifications */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-lg">
-                                    <Layout className="h-4 w-4 text-slate-500" />
-                                    <span className="text-xs font-medium text-slate-600">Layout</span>
+                            <div className="space-y-4 pt-2">
+                                <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                    <Monitor className="h-4 w-4 text-slate-500" />
+                                    <span className="text-xs font-medium text-slate-600">Display Settings</span>
                                 </div>
-
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-medium text-slate-700">Form Width</Label>
-                                    <Select defaultValue="medium">
-                                        <SelectTrigger className="h-9 text-sm border-slate-200">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="narrow">Narrow (600px)</SelectItem>
-                                            <SelectItem value="medium">Medium (800px)</SelectItem>
-                                            <SelectItem value="wide">Wide (1000px)</SelectItem>
-                                            <SelectItem value="full">Full Width</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <Label className="text-xs font-medium text-slate-700">Responsiveness</Label>
+                                    <div className="flex gap-2 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                        <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                        Your form automatically adapts to Mobile, Tablet, and Desktop screens.
+                                    </div>
                                 </div>
                             </div>
                         </div>

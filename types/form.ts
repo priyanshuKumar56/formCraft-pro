@@ -63,6 +63,35 @@ export interface FormSection {
   children: FormSection[]
 }
 
+// Button styling interface
+export interface ButtonStyle {
+  // Size
+  paddingX: number
+  paddingY: number
+  fontSize: number
+  fontWeight: "normal" | "medium" | "semibold" | "bold" | "black"
+  
+  // Colors
+  backgroundColor: string
+  textColor: string
+  borderColor: string
+  borderWidth: number
+  borderRadius: number
+  
+  // Shadow
+  shadow?: {
+    enabled: boolean
+    x: number
+    y: number
+    blur: number
+    spread: number
+    color: string
+  }
+  
+  // Preset style identifier
+  preset?: "default" | "rounded" | "pill" | "outline" | "gradient" | "minimal"
+}
+
 export interface FormPage {
   id: string
   title: string
@@ -92,7 +121,7 @@ export interface FormPage {
     }
 
     // Card (Combined Section Container)
-    backgroundColor: string // Kept for backward compat but used for card
+    backgroundColor: string
     backgroundGradient?: {
       enabled: boolean
       type: "linear" | "radial"
@@ -117,8 +146,12 @@ export interface FormPage {
       left: number
     }
     textColor: string
-    buttonColor: string
-    buttonTextColor: string
+    
+    // Button Styling (replaces simple buttonColor/buttonTextColor)
+    buttonColor: string // kept for backwards compatibility
+    buttonTextColor: string // kept for backwards compatibility
+    buttonStyle?: ButtonStyle
+    
     maxWidth: "sm" | "md" | "lg" | "xl" | "full" | "custom"
     customMaxWidth?: string
     alignment: "left" | "center" | "right"
