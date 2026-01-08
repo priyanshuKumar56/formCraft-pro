@@ -110,6 +110,12 @@ export interface FormPage {
     // Advanced Pages Backgrounds
     backgroundType?: "color" | "gradient" | "image" | "mesh" | "dots"
     backgroundImage?: string
+    backgroundImageBlur?: number // New: Blur for global background image
+    backgroundOverlay?: { // New: Overlay for global background
+        enabled: boolean
+        color: string
+        opacity: number
+    }
     
     // Split Screen Layout Attributes
     splitLayout?: {
@@ -127,6 +133,12 @@ export interface FormPage {
       type: "linear" | "radial"
       colors: string[]
       angle: number
+    }
+    glassmorphism?: { // New: Glassmorphism for the entire form card
+        enabled: boolean
+        blur: number
+        opacity: number
+        borderOpacity?: number
     }
     borderColor: string
     borderWidth: number

@@ -178,6 +178,8 @@ export function FormBuilderRedesign() {
                                 pages={formData.pages}
                                 currentPageIndex={currentPageIndex}
                                 onPageChange={handlePageChange}
+                                onAddPage={handleAddPage}
+                                onDeletePage={handleDeletePage}
                             />
 
                             {/* Canvas */}

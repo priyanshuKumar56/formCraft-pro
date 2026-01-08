@@ -117,43 +117,82 @@ export function FormCanvas({
         }
     }
 
-    const getBackgroundStyle = (): any => {
+    // Helper for Glassmorphism
+    const hexToRgba = (hex: string, opacity: number) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+        return result
+            ? `rgba(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}, ${opacity})`
+            : hex
+    }
+
+    const getBackgroundStyle = (): React.CSSProperties => {
         const bgType = currentPage.layout.backgroundType || 'color'
         const baseColor = currentPage.layout.canvasBackground || '#f8fafc'
 
-        const style: any = {}
+        // If image type, we handle it in separate layers for blur support
+        if (bgType === 'image') {
+            return { backgroundColor: baseColor, position: 'relative', overflow: 'hidden' }
+        }
+
+        const style: React.CSSProperties = { position: 'relative', overflow: 'hidden' }
 
         switch (bgType) {
             case 'mesh':
-                // Instead of returning an object, we parse the string from getMeshGradient
                 const gradientCss = getMeshGradient(baseColor)
-                // Rudimentary parsing for inline styles (works better with class names usually but valid here)
                 const parts = gradientCss.split(';')
                 parts.forEach(part => {
                     const [key, value] = part.split(':')
-                    if (key && value) style[key.trim()] = value.trim()
+                    if (key && value) (style as any)[key.trim()] = value.trim()
                 })
                 return { ...style, backgroundColor: baseColor }
             case 'dots':
                 return {
                     backgroundColor: baseColor,
                     backgroundImage: `radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px)`,
-                    backgroundSize: '24px 24px'
-                }
-            case 'image':
-                return {
-                    backgroundImage: currentPage.layout.backgroundImage ? `url(${currentPage.layout.backgroundImage})` : 'none',
-                    backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: baseColor
+                    backgroundSize: '24px 24px',
+                    ...style
                 }
             case 'gradient':
                 if (currentPage.layout.canvasGradient?.enabled) {
                     const { type, colors, angle } = currentPage.layout.canvasGradient
-                    return { background: type === 'linear' ? `linear-gradient(${angle}deg, ${colors.join(', ')})` : `radial-gradient(circle, ${colors.join(', ')})` }
+                    return {
+                        background: type === 'linear' ? `linear-gradient(${angle}deg, ${colors.join(', ')})` : `radial-gradient(circle, ${colors.join(', ')})`,
+                        ...style
+                    }
                 }
-                return { backgroundColor: baseColor }
+                return { backgroundColor: baseColor, ...style }
             default:
-                return { backgroundColor: baseColor }
+                return { backgroundColor: baseColor, ...style }
         }
+    }
+
+    const renderBackgroundLayers = () => {
+        const layout = currentPage.layout
+        if (layout.backgroundType !== 'image') return null
+
+        return (
+            <>
+                {/* Image Layer */}
+                <div className="absolute inset-0 z-0 transition-all duration-300"
+                    style={{
+                        backgroundImage: layout.backgroundImage ? `url(${layout.backgroundImage})` : 'none',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        filter: layout.backgroundImageBlur ? `blur(${layout.backgroundImageBlur}px)` : 'none',
+                        transform: 'scale(1.02)' // Prevent blur edges
+                    }}
+                />
+                {/* Overlay Layer */}
+                {layout.backgroundOverlay?.enabled && (
+                    <div className="absolute inset-0 z-0 transition-all duration-300 pointer-events-none"
+                        style={{
+                            backgroundColor: layout.backgroundOverlay.color,
+                            opacity: layout.backgroundOverlay.opacity
+                        }}
+                    />
+                )}
+            </>
+        )
     }
 
     const getFormCardStyle = (): React.CSSProperties => {
@@ -165,7 +204,19 @@ export function FormCanvas({
             borderColor: layout.borderColor || '#e2e8f0', borderStyle: 'solid',
             color: layout.textColor || '#0f172a',
             transition: 'all 0.2s ease',
+            position: 'relative',
+            zIndex: 10
         }
+
+        // Glassmorphism Logic
+        if (layout.glassmorphism?.enabled) {
+            cardStyle.backdropFilter = `blur(${layout.glassmorphism.blur}px)`
+            cardStyle.backgroundColor = hexToRgba(layout.backgroundColor || '#ffffff', layout.glassmorphism.opacity)
+            if (layout.glassmorphism.borderOpacity !== undefined) {
+                cardStyle.borderColor = hexToRgba(layout.borderColor || '#e2e8f0', layout.glassmorphism.borderOpacity)
+            }
+        }
+
         if (!isSplitEnabled) {
             cardStyle.padding = `${layout.padding.top}px ${layout.padding.right}px ${layout.padding.bottom}px ${layout.padding.left}px`
         }
@@ -189,7 +240,15 @@ export function FormCanvas({
             overflow: 'hidden', display: 'flex',
             flexDirection: splitLayout?.position === 'left' ? 'row-reverse' : 'row',
             transition: 'all 0.2s ease',
+            position: 'relative',
+            zIndex: 10
         }
+
+        if (layout.glassmorphism?.enabled) {
+            cardStyle.backdropFilter = `blur(${layout.glassmorphism.blur}px)`
+            cardStyle.backgroundColor = hexToRgba(layout.backgroundColor || '#ffffff', layout.glassmorphism.opacity)
+        }
+
         if (layout.shadow?.enabled) {
             const { x, y, blur, spread, color } = layout.shadow
             cardStyle.boxShadow = `${x}px ${y}px ${blur}px ${spread}px ${color}`
@@ -246,6 +305,9 @@ export function FormCanvas({
                 className={`background-area relative w-full max-w-[1240px] min-h-[85vh] rounded-2xl shadow-xl transition-all duration-300 cursor-pointer overflow-hidden ring-offset-2 ring-offset-slate-100 ${isBackgroundSelected ? 'ring-2 ring-pink-500 shadow-pink-500/10' : 'hover:shadow-2xl'}`}
                 style={getBackgroundStyle()}
             >
+                {/* Render separate background layers if needed */}
+                {renderBackgroundLayers()}
+
                 {/* Selection indicator for background */}
                 {isBackgroundSelected && (
                     <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 px-3 py-1 bg-pink-600 text-white text-[9px] font-bold uppercase tracking-wider rounded-full shadow-lg flex items-center gap-1.5">
@@ -255,13 +317,13 @@ export function FormCanvas({
 
                 {/* Inner padding container - Content Alignment */}
                 <div
-                    className="background-inner w-full min-h-full flex flex-col items-center py-8 px-4 md:px-6"
+                    className="background-inner w-full min-h-full flex flex-col items-center py-8 px-4 md:px-6 relative z-10"
                 >
                     {/* FORM CARD (Level 3): The actual form content */}
                     <div
                         ref={canvasRef}
                         onClick={handleFormCardClick}
-                        className={`form-card bg-white transition-all duration-300 relative cursor-pointer ${isOver && canDrop ? "ring-2 ring-violet-400 scale-[1.01]" : ""} ${!selectedElement && !isBackgroundSelected ? 'ring-2 ring-emerald-500 shadow-xl' : 'shadow-lg'}`}
+                        className={`form-card transition-all duration-300 relative cursor-pointer ${isOver && canDrop ? "ring-2 ring-violet-400 scale-[1.01]" : ""} ${!selectedElement && !isBackgroundSelected ? 'ring-2 ring-emerald-500 shadow-xl' : 'shadow-lg'}`}
                         style={isSplitEnabled ? getSplitCardStyle() : getFormCardStyle()}
                     >
                         {/* Form card selection indicator */}
