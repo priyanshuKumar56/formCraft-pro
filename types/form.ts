@@ -78,6 +78,19 @@ export interface FormPage {
       angle: number
     }
     
+    // Advanced Pages Backgrounds
+    backgroundType?: "color" | "gradient" | "image" | "mesh" | "dots"
+    backgroundImage?: string
+    
+    // Split Screen Layout Attributes
+    splitLayout?: {
+      enabled: boolean
+      image: string
+      position: "left" | "right"
+      focalPoint: { x: number, y: number }
+      overlay: { enabled: boolean, color: string, opacity: number }
+    }
+
     // Card (Combined Section Container)
     backgroundColor: string // Kept for backward compat but used for card
     backgroundGradient?: {

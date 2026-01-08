@@ -26,6 +26,11 @@ import {
     LayoutTemplate,
     Type,
     Layers,
+    Image as ImageIcon,
+    Columns,
+    Monitor,
+    Smartphone,
+    Move,
 } from "lucide-react"
 
 interface PropertiesPanelProps {
@@ -452,22 +457,209 @@ export function PropertiesPanel({
                                     {/* CANVAS STYLING */}
                                     <div className="space-y-4">
                                         <Label className="text-[10px] font-bold uppercase tracking-widest text-violet-500">Canvas (Outer Area)</Label>
+
+                                        {/* Background Type Selector */}
                                         <div className="space-y-2">
-                                            <Label className="text-xs text-slate-600">Background</Label>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="color"
-                                                    value={currentPage.layout.canvasBackground}
-                                                    onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: e.target.value } })}
-                                                    className="w-10 h-10 rounded-xl border-2 border-slate-100 cursor-pointer"
-                                                />
+                                            <Label className="text-xs text-slate-600">Background Style</Label>
+                                            <Select
+                                                value={currentPage.layout.backgroundType || 'color'}
+                                                onValueChange={(val: any) => onUpdatePage({ layout: { ...currentPage.layout, backgroundType: val } })}
+                                            >
+                                                <SelectTrigger className="h-9 text-xs">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="color">Solid Color</SelectItem>
+                                                    <SelectItem value="gradient">Gradient</SelectItem>
+                                                    <SelectItem value="mesh">Mesh Gradient</SelectItem>
+                                                    <SelectItem value="dots">Dot Pattern</SelectItem>
+                                                    <SelectItem value="image">Image</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        {/* Color picker for solid/gradient backgrounds */}
+                                        {(!currentPage.layout.backgroundType || currentPage.layout.backgroundType === 'color' || currentPage.layout.backgroundType === 'gradient' || currentPage.layout.backgroundType === 'dots') && (
+                                            <div className="space-y-2">
+                                                <Label className="text-xs text-slate-600">Background Color</Label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="color"
+                                                        value={currentPage.layout.canvasBackground}
+                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: e.target.value } })}
+                                                        className="w-10 h-10 rounded-xl border-2 border-slate-100 cursor-pointer"
+                                                    />
+                                                    <Input
+                                                        value={currentPage.layout.canvasBackground}
+                                                        onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: e.target.value } })}
+                                                        className="flex-1 h-10 text-xs font-mono border-slate-200 rounded-xl"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Image URL for image background */}
+                                        {currentPage.layout.backgroundType === 'image' && (
+                                            <div className="space-y-2">
+                                                <Label className="text-xs text-slate-600">Image URL</Label>
                                                 <Input
-                                                    value={currentPage.layout.canvasBackground}
-                                                    onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, canvasBackground: e.target.value } })}
-                                                    className="flex-1 h-10 text-xs font-mono border-slate-200 rounded-xl"
+                                                    value={currentPage.layout.backgroundImage || ''}
+                                                    onChange={(e) => onUpdatePage({ layout: { ...currentPage.layout, backgroundImage: e.target.value } })}
+                                                    className="h-9 text-xs"
+                                                    placeholder="https://example.com/image.jpg"
                                                 />
                                             </div>
+                                        )}
+                                    </div>
+
+                                    {/* SPLIT LAYOUT SECTION */}
+                                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Columns className="h-4 w-4 text-pink-500" />
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-900">Split Layout</Label>
+                                            </div>
+                                            <Switch
+                                                checked={currentPage.layout.splitLayout?.enabled || false}
+                                                onCheckedChange={(val) => onUpdatePage({
+                                                    layout: {
+                                                        ...currentPage.layout,
+                                                        splitLayout: {
+                                                            enabled: val,
+                                                            image: currentPage.layout.splitLayout?.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',
+                                                            position: currentPage.layout.splitLayout?.position || 'right',
+                                                            focalPoint: currentPage.layout.splitLayout?.focalPoint || { x: 50, y: 50 },
+                                                            overlay: currentPage.layout.splitLayout?.overlay || { enabled: true, color: '#000000', opacity: 0.2 }
+                                                        }
+                                                    }
+                                                })}
+                                            />
                                         </div>
+
+                                        {currentPage.layout.splitLayout?.enabled && (
+                                            <div className="space-y-4 pl-2 border-l-2 border-pink-100">
+                                                {/* Image URL */}
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs text-slate-600">Cover Image URL</Label>
+                                                    <Input
+                                                        value={currentPage.layout.splitLayout.image}
+                                                        onChange={(e) => onUpdatePage({
+                                                            layout: {
+                                                                ...currentPage.layout,
+                                                                splitLayout: { ...currentPage.layout.splitLayout!, image: e.target.value }
+                                                            }
+                                                        })}
+                                                        className="h-9 text-xs"
+                                                        placeholder="https://..."
+                                                    />
+                                                </div>
+
+                                                {/* Layout Position */}
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs text-slate-600">Image Position</Label>
+                                                    <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                                                        <button
+                                                            onClick={() => onUpdatePage({
+                                                                layout: {
+                                                                    ...currentPage.layout,
+                                                                    splitLayout: { ...currentPage.layout.splitLayout!, position: 'left' }
+                                                                }
+                                                            })}
+                                                            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${currentPage.layout.splitLayout.position === 'left' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
+                                                        >
+                                                            Left
+                                                        </button>
+                                                        <button
+                                                            onClick={() => onUpdatePage({
+                                                                layout: {
+                                                                    ...currentPage.layout,
+                                                                    splitLayout: { ...currentPage.layout.splitLayout!, position: 'right' }
+                                                                }
+                                                            })}
+                                                            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${currentPage.layout.splitLayout.position === 'right' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
+                                                        >
+                                                            Right
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Focal Point */}
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs text-slate-600 flex items-center gap-1"><Move className="h-3 w-3" /> Focal Point</Label>
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        <div className="space-y-1">
+                                                            <Label className="text-[10px] text-slate-400">X: {currentPage.layout.splitLayout.focalPoint?.x || 50}%</Label>
+                                                            <Slider
+                                                                value={[currentPage.layout.splitLayout.focalPoint?.x || 50]}
+                                                                min={0} max={100} step={1}
+                                                                onValueChange={([val]) => onUpdatePage({
+                                                                    layout: {
+                                                                        ...currentPage.layout,
+                                                                        splitLayout: {
+                                                                            ...currentPage.layout.splitLayout!,
+                                                                            focalPoint: { ...currentPage.layout.splitLayout!.focalPoint, x: val }
+                                                                        }
+                                                                    }
+                                                                })}
+                                                            />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <Label className="text-[10px] text-slate-400">Y: {currentPage.layout.splitLayout.focalPoint?.y || 50}%</Label>
+                                                            <Slider
+                                                                value={[currentPage.layout.splitLayout.focalPoint?.y || 50]}
+                                                                min={0} max={100} step={1}
+                                                                onValueChange={([val]) => onUpdatePage({
+                                                                    layout: {
+                                                                        ...currentPage.layout,
+                                                                        splitLayout: {
+                                                                            ...currentPage.layout.splitLayout!,
+                                                                            focalPoint: { ...currentPage.layout.splitLayout!.focalPoint, y: val }
+                                                                        }
+                                                                    }
+                                                                })}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Overlay */}
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <Label className="text-xs text-slate-600">Overlay</Label>
+                                                        <Switch
+                                                            checked={currentPage.layout.splitLayout.overlay?.enabled}
+                                                            onCheckedChange={(val) => onUpdatePage({
+                                                                layout: {
+                                                                    ...currentPage.layout,
+                                                                    splitLayout: {
+                                                                        ...currentPage.layout.splitLayout!,
+                                                                        overlay: { ...currentPage.layout.splitLayout!.overlay, enabled: val }
+                                                                    }
+                                                                }
+                                                            })}
+                                                        />
+                                                    </div>
+                                                    {currentPage.layout.splitLayout.overlay?.enabled && (
+                                                        <div className="space-y-2">
+                                                            <Label className="text-[10px] text-slate-400">Opacity: {Math.round((currentPage.layout.splitLayout.overlay.opacity || 0) * 100)}%</Label>
+                                                            <Slider
+                                                                value={[(currentPage.layout.splitLayout.overlay.opacity || 0) * 100]}
+                                                                min={0} max={100} step={5}
+                                                                onValueChange={([val]) => onUpdatePage({
+                                                                    layout: {
+                                                                        ...currentPage.layout,
+                                                                        splitLayout: {
+                                                                            ...currentPage.layout.splitLayout!,
+                                                                            overlay: { ...currentPage.layout.splitLayout!.overlay, opacity: val / 100 }
+                                                                        }
+                                                                    }
+                                                                })}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* FORM CARD STYLING */}
