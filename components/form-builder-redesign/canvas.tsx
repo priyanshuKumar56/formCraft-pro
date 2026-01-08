@@ -49,19 +49,17 @@ export function FormCanvas({
         collect: (monitor) => ({ isOver: monitor.isOver({ shallow: true }), canDrop: monitor.canDrop() }),
     }))
 
-    // Select Background Area (second layer - the stylable background)
     const handleBackgroundClick = useCallback((e: React.MouseEvent) => {
         const target = e.target as HTMLElement
-        if (target.classList.contains('background-area') || target.classList.contains('background-inner')) {
-            e.stopPropagation()
-            onSelectElement("__background__")
-        }
+        // Allow selection only if clicking the background area itself, not children
+        if (target.closest('.form-card')) return
+        e.stopPropagation()
+        onSelectElement("__background__")
     }, [onSelectElement])
 
-    // Select Form Card (innermost)
     const handleFormCardClick = (e: React.MouseEvent) => {
         e.stopPropagation()
-        onSelectElement(null) // null = Form Card/Page selected
+        onSelectElement(null)
     }
 
     const handleButtonsClick = (e: React.MouseEvent) => {
@@ -85,11 +83,9 @@ export function FormCanvas({
     const getButtonCSS = (): React.CSSProperties => {
         let style: React.CSSProperties = {
             backgroundColor: buttonStyle.backgroundColor, color: buttonStyle.textColor,
-            padding: `${buttonStyle.paddingY}px ${buttonStyle.paddingX}px`,
-            fontSize: `${buttonStyle.fontSize}px`,
+            padding: `${buttonStyle.paddingY}px ${buttonStyle.paddingX}px`, fontSize: `${buttonStyle.fontSize}px`,
             fontWeight: buttonStyle.fontWeight === 'black' ? 900 : buttonStyle.fontWeight === 'bold' ? 700 : buttonStyle.fontWeight === 'semibold' ? 600 : buttonStyle.fontWeight === 'medium' ? 500 : 400,
-            borderRadius: `${buttonStyle.borderRadius}px`,
-            borderWidth: `${buttonStyle.borderWidth}px`, borderColor: buttonStyle.borderColor, borderStyle: 'solid',
+            borderRadius: `${buttonStyle.borderRadius}px`, borderWidth: `${buttonStyle.borderWidth}px`, borderColor: buttonStyle.borderColor, borderStyle: 'solid',
             transition: 'all 0.15s ease',
         }
         if (buttonStyle.shadow?.enabled) {
@@ -99,28 +95,50 @@ export function FormCanvas({
         return style
     }
 
-    // BACKGROUND AREA styles (this is what users see when form is shared)
-    const getBackgroundStyle = (): React.CSSProperties => {
+    // EXCLUSIVE GRADIENT LOGIC
+    const getMeshGradient = (baseColor: string) => {
+        // Map base colors to specific premium gradients
+        switch (baseColor) {
+            case "#fdf2f8": // Candy (Pink/Rose)
+                return `background-color: #fdf2f8; background-image: radial-gradient(at 40% 20%, hsla(330,100%,70%,0.4) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(280,100%,76%,0.4) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(340,100%,76%,0.4) 0px, transparent 50%), radial-gradient(at 80% 50%, hsla(350,100%,77%,0.4) 0px, transparent 50%), radial-gradient(at 0% 100%, hsla(270,100%,77%,0.4) 0px, transparent 50%), radial-gradient(at 80% 100%, hsla(310,100%,70%,0.4) 0px, transparent 50%), radial-gradient(at 0% 0%, hsla(343,100%,76%,0.4) 0px, transparent 50%);`
+            case "#ecfeff": // Ocean (Cyan/Blue)
+                return `background-color: #ecfeff; background-image: radial-gradient(at 40% 20%, hsla(190,100%,70%,0.4) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(220,100%,76%,0.4) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(180,100%,76%,0.4) 0px, transparent 50%), radial-gradient(at 80% 50%, hsla(210,100%,77%,0.4) 0px, transparent 50%), radial-gradient(at 0% 100%, hsla(200,100%,77%,0.4) 0px, transparent 50%);`
+            case "#fff7ed": // Sunset (Orange/Red)
+                return `background-color: #fff7ed; background-image: radial-gradient(at 40% 20%, hsla(28,100%,74%,0.4) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(350,100%,76%,0.4) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(50,100%,76%,0.4) 0px, transparent 50%), radial-gradient(at 80% 50%, hsla(20,100%,77%,0.4) 0px, transparent 50%), radial-gradient(at 0% 100%, hsla(30,100%,77%,0.4) 0px, transparent 50%);`
+            case "#f0fdf4": // Forest (Green/Emerald)
+                return `background-color: #f0fdf4; background-image: radial-gradient(at 40% 20%, hsla(120,100%,70%,0.4) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(150,100%,76%,0.4) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(100,100%,76%,0.4) 0px, transparent 50%), radial-gradient(at 80% 50%, hsla(140,100%,77%,0.4) 0px, transparent 50%);`
+            case "#faf5ff": // Lavender (Purple/Violet)
+                return `background-color: #faf5ff; background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,0) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0) 0, transparent 50%); background-image: radial-gradient(at 40% 20%, hsla(260,100%,70%,0.3) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(290,100%,76%,0.3) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(240,100%,76%,0.3) 0px, transparent 50%);`
+            case "#fef2f2": // Fire (Red/Orange)
+                return `background-color: #fef2f2; background-image: radial-gradient(at 40% 20%, hsla(0,100%,70%,0.3) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(30,100%,76%,0.3) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(350,100%,76%,0.3) 0px, transparent 50%);`
+            default:
+                // Fallback mesh
+                return `background-color: ${baseColor}; background-image: radial-gradient(at 40% 20%, rgba(236, 72, 153, 0.2) 0px, transparent 50%), radial-gradient(at 80% 0%, rgba(59, 130, 246, 0.2) 0px, transparent 50%), radial-gradient(at 0% 50%, rgba(168, 85, 247, 0.2) 0px, transparent 50%);`
+        }
+    }
+
+    const getBackgroundStyle = (): any => {
         const bgType = currentPage.layout.backgroundType || 'color'
         const baseColor = currentPage.layout.canvasBackground || '#f8fafc'
 
+        const style: any = {}
+
         switch (bgType) {
             case 'mesh':
-                return {
-                    background: `
-                        linear-gradient(135deg, ${baseColor} 0%, transparent 50%),
-                        radial-gradient(ellipse at 0% 100%, rgba(236, 72, 153, 0.4) 0%, transparent 50%),
-                        radial-gradient(ellipse at 100% 100%, rgba(59, 130, 246, 0.35) 0%, transparent 50%),
-                        radial-gradient(ellipse at 50% 50%, rgba(168, 85, 247, 0.3) 0%, transparent 60%),
-                        radial-gradient(ellipse at 80% 20%, rgba(6, 182, 212, 0.3) 0%, transparent 40%)
-                    `,
-                    backgroundColor: baseColor
-                }
+                // Instead of returning an object, we parse the string from getMeshGradient
+                const gradientCss = getMeshGradient(baseColor)
+                // Rudimentary parsing for inline styles (works better with class names usually but valid here)
+                const parts = gradientCss.split(';')
+                parts.forEach(part => {
+                    const [key, value] = part.split(':')
+                    if (key && value) style[key.trim()] = value.trim()
+                })
+                return { ...style, backgroundColor: baseColor }
             case 'dots':
                 return {
                     backgroundColor: baseColor,
-                    backgroundImage: `radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)`,
-                    backgroundSize: '16px 16px'
+                    backgroundImage: `radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px)`,
+                    backgroundSize: '24px 24px'
                 }
             case 'image':
                 return {
@@ -138,7 +156,6 @@ export function FormCanvas({
         }
     }
 
-    // FORM CARD styles
     const getFormCardStyle = (): React.CSSProperties => {
         const layout = currentPage.layout
         let cardStyle: React.CSSProperties = {
@@ -219,41 +236,39 @@ export function FormCanvas({
     )
 
     return (
-        // CANVAS AREA - Outermost (editor workspace - NOT stylable, just gray)
-        <div className="flex-1 overflow-auto bg-slate-100 scroll-smooth">
+        // CANVAS AREA (Level 1): The outer gray workspace (bg-slate-100)
+        // Added padding (p-8) to separate it from the inner Background Area
+        <div className="flex-1 overflow-auto bg-slate-100 flex items-start justify-center p-8 md:p-12 scroll-smooth">
 
-            {/* BACKGROUND AREA - Second layer (THIS is what users see when form is shared - STYLABLE) */}
+            {/* BACKGROUND AREA (Level 2): The "Page" or "Screen" users see */}
+            {/* Added shadow-2xl and rounded-2xl to detach it from the canvas */}
+            {/* Added max-w-7xl to keep it constrained as a 'screen' */}
             <div
                 onClick={handleBackgroundClick}
-                className={`background-area min-h-full transition-all cursor-pointer ${isBackgroundSelected ? 'ring-4 ring-inset ring-pink-500/40' : ''}`}
+                className={`background-area relative w-full max-w-[1400px] min-h-[85vh] rounded-3xl shadow-2xl transition-all duration-300 cursor-pointer overflow-hidden ring-offset-4 ring-offset-slate-100 ${isBackgroundSelected ? 'ring-4 ring-pink-500 shadow-pink-500/10' : 'hover:shadow-3xl hover:-translate-y-1'}`}
                 style={getBackgroundStyle()}
             >
                 {/* Selection indicator for background */}
                 {isBackgroundSelected && (
-                    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-3 py-1.5 bg-pink-600 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">
-                        Background Selected
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-1.5 bg-pink-600 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg flex items-center gap-2">
+                        <Sparkles className="h-3 w-3" /> Background Selected
                     </div>
                 )}
 
-                {/* Inner padding container */}
+                {/* Inner padding container - Content Alignment */}
                 <div
-                    className="background-inner min-h-full py-16 px-8 flex flex-col items-center"
-                    style={{
-                        backgroundImage: currentPage.layout.backgroundType === 'color' || !currentPage.layout.backgroundType
-                            ? `radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px)` : 'none',
-                        backgroundSize: '20px 20px',
-                    }}
+                    className="background-inner w-full min-h-full flex flex-col items-center py-16 px-4 md:px-8"
                 >
-                    {/* FORM CARD - Innermost */}
+                    {/* FORM CARD (Level 3): The actual form content */}
                     <div
                         ref={canvasRef}
                         onClick={handleFormCardClick}
-                        className={`form-card bg-white transition-all duration-300 relative cursor-pointer ${isOver && canDrop ? "ring-2 ring-violet-400" : ""} ${!selectedElement && !isBackgroundSelected ? 'ring-2 ring-emerald-500' : ''}`}
+                        className={`form-card bg-white transition-all duration-300 relative cursor-pointer ${isOver && canDrop ? "ring-2 ring-violet-400 scale-[1.01]" : ""} ${!selectedElement && !isBackgroundSelected ? 'ring-2 ring-emerald-500 shadow-xl' : 'shadow-lg'}`}
                         style={isSplitEnabled ? getSplitCardStyle() : getFormCardStyle()}
                     >
                         {/* Form card selection indicator */}
                         {!selectedElement && !isBackgroundSelected && (
-                            <div className="absolute -top-3 left-4 px-2 py-0.5 bg-emerald-600 text-white text-[9px] font-bold uppercase tracking-wider rounded shadow-lg z-10">
+                            <div className="absolute -top-3 left-4 px-2 py-0.5 bg-emerald-600 text-white text-[9px] font-bold uppercase tracking-wider rounded shadow-lg z-10 shadow-emerald-500/20">
                                 Form Card
                             </div>
                         )}
@@ -277,18 +292,19 @@ export function FormCanvas({
                                     )}
                                     {renderButtonsSection()}
                                 </div>
-                                <div className="w-2/5 min-h-[320px] relative group"
+                                <div className="w-2/5 min-h-[320px] relative group overflow-hidden"
                                     style={{
-                                        backgroundImage: `url(${splitLayout.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe'})`, backgroundSize: 'cover',
+                                        backgroundImage: `url(${splitLayout.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe'})`,
+                                        backgroundSize: 'cover',
                                         backgroundPosition: `${splitLayout.focalPoint?.x || 50}% ${splitLayout.focalPoint?.y || 50}%`
                                     }}>
                                     {splitLayout.overlay?.enabled && (
-                                        <div className="absolute inset-0" style={{ backgroundColor: splitLayout.overlay.color || '#000', opacity: splitLayout.overlay.opacity || 0.2 }} />
+                                        <div className="absolute inset-0 transition-opacity duration-300" style={{ backgroundColor: splitLayout.overlay.color || '#000', opacity: splitLayout.overlay.opacity || 0.2 }} />
                                     )}
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                        <div className="w-6 h-6 border-2 border-white rounded-full shadow flex items-center justify-center bg-white/20 backdrop-blur-sm"
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none backdrop-blur-[1px]">
+                                        <div className="w-8 h-8 border-2 border-white/80 rounded-full shadow-lg flex items-center justify-center bg-black/20 backdrop-blur-md"
                                             style={{ position: 'absolute', left: `${splitLayout.focalPoint?.x || 50}%`, top: `${splitLayout.focalPoint?.y || 50}%`, transform: 'translate(-50%, -50%)' }}>
-                                            <Move className="h-3 w-3 text-white" />
+                                            <Move className="h-4 w-4 text-white drop-shadow-md" />
                                         </div>
                                     </div>
                                 </div>
@@ -313,8 +329,8 @@ export function FormCanvas({
                         )}
                     </div>
 
-                    {/* Add Section Buttons */}
-                    <div className="flex items-center justify-center gap-3 mt-8 mb-16">
+                    {/* Add Section Buttons (Floating below card) */}
+                    <div className="flex items-center justify-center gap-3 mt-12 mb-8 transition-all duration-300 bg-white/50 backdrop-blur-sm p-2 rounded-xl border border-white/20 shadow-sm hover:shadow-md hover:bg-white/80">
                         <button onClick={() => onAddSection("input-zone")}
                             className="group flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md hover:border-violet-400 hover:-translate-y-0.5 transition-all text-sm">
                             <div className="w-6 h-6 rounded-md bg-violet-100 flex items-center justify-center text-violet-600 group-hover:bg-violet-600 group-hover:text-white transition-colors">
